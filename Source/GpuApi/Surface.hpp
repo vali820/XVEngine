@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include "GpuApi/Common.hpp"
+#include "Image.hpp"
 
 class Device;
 class Window;
@@ -28,7 +29,9 @@ class Surface {
 
     u32 imageCount = 0;
     Vec<VkImage> images;
-    Vec<VkImageView> imageViews;
+    Vec<ImageView*> imageViews;
+
+    bool isX11Window = false;
 
    public:
     Surface(Device* device, Window* window);
@@ -37,10 +40,10 @@ class Surface {
 
     void configure(const SurfaceConfig& config);
 
-    u32 getNextImageIndex(u64 timeout, Semaphore* semaphore, Fence* fence);
+    VkResult getNextImageIndex(u64 timeout, Semaphore* semaphore, Fence* fence, u32& idx);
 
-    inline const Vec<VkImageView>& getImageViews() { return imageViews; }
     inline const Vec<VkImage>& getImages() { return images; }
+    inline const Vec<ImageView*>& getImageViews() { return imageViews; }
 
     inline Device* getDevice() { return device; }
     inline Window* getWindow() { return window; }
@@ -56,14 +59,11 @@ class Surface {
     [[nodiscard]] inline const Vec<VkPresentModeKHR>& getSupportedPresentModes() const {
         return supportedPresentModes;
     }
-    [[nodiscard]] inline VkSurfaceCapabilitiesKHR getSurfaceCapabilities() const {
-        return surfaceCaps;
-    }
+    [[nodiscard]] inline VkSurfaceCapabilitiesKHR getSurfaceCapabilities() const { return surfaceCaps; }
 
    private:
     void createSurface();
     void getSurfaceSupport();
     void createSwapchain();
     void destroySwapchain();
-    void createImageViews();
 };

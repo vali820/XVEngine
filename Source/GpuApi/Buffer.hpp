@@ -1,11 +1,11 @@
 #pragma once
 
-class Device;
-
 #include <vulkan/vulkan.h>
 
 #include "Core/Core.hpp"
 #include "ThirdParty/vma/vk_mem_alloc.h"
+
+class Device;
 
 class Buffer {
    private:

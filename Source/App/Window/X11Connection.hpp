@@ -3,10 +3,11 @@
 #include <xcb/xcb.h>
 
 #include "Core/Core.hpp"
+#include "WindowConnection.hpp"
 
 class X11Window;
 
-class X11Connection {
+class X11Connection : public WindowConnection {
     friend class X11Window;
 
    private:
@@ -20,9 +21,11 @@ class X11Connection {
 
    public:
     X11Connection();
-    ~X11Connection();
+    ~X11Connection() override;
 
-    void update();
+    void update() override;
+
+    Window* createWindow() override;
 
    private:
     xcb_atom_t getInternAtom(const String& name);

@@ -15,6 +15,8 @@ class X11Window : public Window {
     xcb_screen_t* screen;
     xcb_window_t id;
 
+    u16 width{}, height{};
+
    public:
     X11Window(X11Connection* connection, u32 width, u32 height);
     ~X11Window() override;

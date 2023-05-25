@@ -3,7 +3,7 @@ add_library(GpuApi
         Surface.cpp
         Fence.cpp Semaphore.cpp
         Shader.cpp DescriptorSet.cpp
-        Buffer.cpp
+        Buffer.cpp Image.cpp
         ../ThirdParty/vma/vk_mem_alloc.cpp
         )
 

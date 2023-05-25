@@ -1,4 +1,9 @@
-add_library(App App.cpp AppWindow.cpp Window/Window.cpp Event/Event.cpp)
+add_library(App
+        App.cpp AppWindow.cpp
+        Window/Window.cpp Window/WindowConnection.cpp Event/Event.cpp
+        Draw/DrawContext.cpp
+        Widget/Widget.cpp
+        )
 target_link_libraries(App Core GpuApi)
 
 if (LINUX)

@@ -1,10 +1,13 @@
 #pragma once
 
+#include <chrono>
 #include <format>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
+
+using namespace std::chrono_literals;
 
 #include "Ptr.hpp"
 #include "String.hpp"

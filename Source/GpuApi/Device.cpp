@@ -75,10 +75,13 @@ void Device::pickPhysicalDevice() {
     for (auto pd : devices) {
         getPhysicalDeviceFeatures(pd);
 
-        bool featuresOk = supportedFeatures2.features.fillModeNonSolid and  // Feature checks
+        // clang-format off
+        bool featuresOk = supportedFeatures2.features.fillModeNonSolid and
                           supportedVulkan13Features.synchronization2 and
                           supportedVulkan13Features.dynamicRendering and
-                          supportedShaderObjectFeatures.shaderObject;
+                          supportedShaderObjectFeatures.shaderObject and
+                          supportedDescriptorBufferFeatures.descriptorBuffer;
+        // clang-format on
 
         if (featuresOk)
             physicalDevice = pd;
@@ -88,9 +91,13 @@ void Device::pickPhysicalDevice() {
 }
 
 void Device::getPhysicalDeviceFeatures(VkPhysicalDevice pd) {
+    supportedDescriptorBufferFeatures = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+        .pNext = nullptr,
+    };
     supportedShaderObjectFeatures = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-        .pNext = nullptr,
+        .pNext = &supportedDescriptorBufferFeatures,
     };
     supportedVulkan13Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,

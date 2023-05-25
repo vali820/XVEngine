@@ -27,6 +27,8 @@ WlConnection::~WlConnection() {
 
 void WlConnection::update() { wl_display_dispatch_pending(display); }
 
+Window *WlConnection::createWindow() { return new WlWindow(this); }
+
 /******************
  * Base callbacks *
  ******************/

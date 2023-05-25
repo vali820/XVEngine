@@ -16,6 +16,8 @@ void X11Connection::update() {
     for (X11Window* w : windows) w->update();
 }
 
+Window* X11Connection::createWindow() { return new X11Window(this, 800, 600); }
+
 xcb_atom_t X11Connection::getInternAtom(const String& name) {
     xcb_intern_atom_cookie_t cookie = xcb_intern_atom(connection, 0, name.getSize(), name.getData());
     xcb_intern_atom_reply_t* reply  = xcb_intern_atom_reply(connection, cookie, nullptr);

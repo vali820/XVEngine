@@ -5,6 +5,9 @@
 
 #include "Core/Core.hpp"
 
+class DescriptorSetLayout;
+class ImageView;
+
 const u32 COLOR_COMPONENTS_ALL =
     VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
@@ -20,8 +23,6 @@ enum class CmdBufferLevel {
     Secondary = VK_COMMAND_BUFFER_LEVEL_SECONDARY,
 };
 
-class DescriptorSetLayout;
-
 struct ShaderDesc {
     VkShaderStageFlagBits stage;
     VkShaderStageFlags nextStage;
@@ -33,7 +34,7 @@ struct ShaderDesc {
 };
 
 struct RenderingAttachment {
-    VkImageView imageView;
+    ImageView* imageView;
     VkImageLayout imageLayout;
     VkAttachmentLoadOp loadOp;
     VkAttachmentStoreOp storeOp;
@@ -60,4 +61,11 @@ struct VertexAttribute {
     u32 binding;
     u32 offset;
     VkFormat format;
+};
+
+struct ImageDesc {
+    VkFormat format;
+    u32 width, height;
+    VkImageUsageFlags usage;
+    VkImageLayout initialLayout;
 };

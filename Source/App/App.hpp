@@ -4,16 +4,7 @@
 
 class AppWindow;
 class Device;
-class WlConnection;
-class X11Connection;
-
-enum class WindowingSystem {
-    None,
-    X11,
-    Wayland,
-    Windows,
-    MacOS,
-};
+class WindowConnection;
 
 /**
  * @brief Base application class
@@ -24,11 +15,9 @@ class App {
    private:
     const String name;
     Vec<AppWindow*> windows;
-    const WindowingSystem windowingSystem = WindowingSystem::None;
 
     Device* device;
-    WlConnection* wlConnection{};
-    X11Connection* x11Connection{};
+    WindowConnection* windowConnection;
 
     bool running = true;
 
@@ -46,6 +35,5 @@ class App {
     inline void exit() { running = false; }
 
     [[nodiscard]] inline const String& getName() const { return name; }
-    [[nodiscard]] inline WindowingSystem getWindowingSystem() const { return windowingSystem; }
     inline Device* getDevice() { return device; }
 };

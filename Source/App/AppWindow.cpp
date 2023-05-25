@@ -2,11 +2,7 @@
 
 #include "App.hpp"
 #include "Window/Window.hpp"
-
-#ifdef __linux__
-#include "Window/WlWindow.hpp"
-#include "Window/X11Window.hpp"
-#endif
+#include "Window/WindowConnection.hpp"
 
 Vec<u8> readFile(const char* path) {
     std::ifstream f(path, std::ios::ate | std::ios::binary);
@@ -18,14 +14,54 @@ Vec<u8> readFile(const char* path) {
     return buf;
 }
 
+void changeImageLayout(CmdBuffer* cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
+                       VkPipelineStageFlags2 srcStageMask, VkPipelineStageFlags2 dstStageMask,
+                       VkAccessFlags2 srcAccessMask, VkAccessFlags2 dstAccessMask) {
+    VkImageMemoryBarrier2 barrier{
+        .sType         = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .srcStageMask  = srcStageMask,
+        .srcAccessMask = srcAccessMask,
+        .dstStageMask  = dstStageMask,
+        .dstAccessMask = dstAccessMask,
+        .oldLayout     = oldLayout,
+        .newLayout     = newLayout,
+        .image         = image,
+        .subresourceRange =
+            {
+                .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel   = 0,
+                .levelCount     = 1,
+                .baseArrayLayer = 0,
+                .layerCount     = 1,
+            },
+    };
+    cmd->barrier({barrier});
+}
+
+void prepareImageForPresent(CmdBuffer* cmd, VkImage image) {
+    changeImageLayout(cmd,
+                      image,
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                      VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                      VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
+                      VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                      0);
+}
+
+void prepareImageForRender(CmdBuffer* cmd, VkImage image) {
+    changeImageLayout(cmd,
+                      image,
+                      VK_IMAGE_LAYOUT_UNDEFINED,
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                      VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+                      VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                      0,
+                      VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+}
+
 AppWindow::AppWindow(App* _app, const String& title) : app(_app), device(app->getDevice()) {
-#ifdef __linux__
-    if (app->getWindowingSystem() == WindowingSystem::Wayland) {
-        window = new WlWindow(app->wlConnection);
-    } else if (app->getWindowingSystem() == WindowingSystem::X11) {
-        window = new X11Window(app->x11Connection, 800, 600);
-    }
-#endif
+    window = app->windowConnection->createWindow();
 
     window->setTitle(title);
     window->setExitCallback([this]() { app->exit(); });
@@ -41,7 +77,7 @@ AppWindow::AppWindow(App* _app, const String& title) : app(_app), device(app->ge
     config        = {
                .format      = surfaceFormat.format,
                .colorSpace  = surfaceFormat.colorSpace,
-               .presentMode = VK_PRESENT_MODE_FIFO_KHR,
+               .presentMode = VK_PRESENT_MODE_MAILBOX_KHR,
                .width       = 800,
                .height      = 600,
     };
@@ -60,7 +96,7 @@ AppWindow::AppWindow(App* _app, const String& title) : app(_app), device(app->ge
             .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             .loadOp      = VK_ATTACHMENT_LOAD_OP_CLEAR,
             .storeOp     = VK_ATTACHMENT_STORE_OP_STORE,
-            .clearValue  = {.color = {.float32 = {0.1f, 0.1f, 0.1f, 1.0f}}},
+            .clearValue  = {.color = {.float32 = {0.0f, 0.0f, 0.0f, 0.0f}}},
         }},
     };
     ShaderDesc vsDesc = {
@@ -108,7 +144,7 @@ void AppWindow::update() {
     fence->waitFor(UINT64_MAX);
     fence->reset();
 
-    imageIndex = surface->getNextImageIndex(UINT64_MAX, imageAvailable, nullptr);
+    surface->getNextImageIndex(UINT64_MAX, imageAvailable, nullptr, imageIndex);
 
     renderingInfo.colorAttachments[0].imageView = surface->getImageViews()[imageIndex];
 
@@ -157,9 +193,13 @@ void AppWindow::update() {
 
     cmdBuffer->bindVertexBuffer(vertexBuffer, 0);
 
+    prepareImageForRender(cmdBuffer, surface->getImages()[imageIndex]);
+
     cmdBuffer->beginRendering(renderingInfo);
     cmdBuffer->draw(3, 1, 0, 0);
     cmdBuffer->endRendering();
+
+    prepareImageForPresent(cmdBuffer, surface->getImages()[imageIndex]);
 
     cmdBuffer->end();
 

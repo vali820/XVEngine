@@ -7,10 +7,11 @@
 #include "Core/Core.hpp"
 #include "ThirdParty/wayland/xdg-decoration.h"
 #include "ThirdParty/wayland/xdg-shell.h"
+#include "WindowConnection.hpp"
 
 class WlWindow;
 
-class WlConnection {
+class WlConnection : public WindowConnection {
     // WlConnection and WlWindow are tightly coupled
     // This may be bad practice, but keeping them separate is impossible as they need each other to function
     friend class WlWindow;
@@ -78,9 +79,11 @@ class WlConnection {
 
    public:
     WlConnection();
-    ~WlConnection();
+    ~WlConnection() override;
 
-    void update();
+    void update() override;
+
+    Window* createWindow() override;
 
    private:
     const wl_registry_listener registryListener{

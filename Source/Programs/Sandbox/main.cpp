@@ -3,8 +3,8 @@
 
 class SandboxApp : public App {
     void init() override {
-        auto window1 = new AppWindow(this, "Window1");
-        addWindow(window1);
+        auto window = new AppWindow(this, "XVEngine");
+        addWindow(window);
     }
 
    public:

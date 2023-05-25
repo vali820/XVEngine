@@ -29,6 +29,8 @@ Surface::~Surface() {
 }
 
 void Surface::configure(const SurfaceConfig& config) {
+    getSurfaceSupport();
+
     // Format and color space
     bool formatOk = false;
     for (const auto& f : supportedFormats) {
@@ -53,10 +55,12 @@ void Surface::configure(const SurfaceConfig& config) {
     if (!presentModeOk) throw std::runtime_error("Present mode not supported");
 
     // Extent
-    if (config.width >= surfaceCaps.minImageExtent.width and
-        config.width <= surfaceCaps.maxImageExtent.width and
-        config.height >= surfaceCaps.minImageExtent.height and
-        config.height <= surfaceCaps.maxImageExtent.height) {
+    if (isX11Window) {
+        extent = surfaceCaps.currentExtent;
+    } else if (config.width >= surfaceCaps.minImageExtent.width and
+               config.width <= surfaceCaps.maxImageExtent.width and
+               config.height >= surfaceCaps.minImageExtent.height and
+               config.height <= surfaceCaps.maxImageExtent.height) {
         extent = {config.width, config.height};
     } else
         throw std::runtime_error("Extent not supported");
@@ -67,6 +71,7 @@ void Surface::configure(const SurfaceConfig& config) {
 void Surface::createSurface() {
 #ifdef __linux__
     if (auto x11Window = dynamic_cast<X11Window*>(window)) {
+        isX11Window = true;
         VkXcbSurfaceCreateInfoKHR createInfo{
             .sType      = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
             .connection = x11Window->getXcbConnection(),
@@ -138,52 +143,23 @@ void Surface::createSwapchain() {
     images.resize(imageCount);
     vkGetSwapchainImagesKHR(device->getVkDevice(), swapchain, &imageCount, images.getData());
 
-    createImageViews();
-}
-
-void Surface::createImageViews() {
+    // Create image views
     for (const auto& img : images) {
-        VkImageViewCreateInfo createInfo{
-            .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image    = img,
-            .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format   = format,
-            .components =
-                {
-                    .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .a = VK_COMPONENT_SWIZZLE_IDENTITY,
-                },
-            .subresourceRange =
-                {
-                    .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel   = 0,
-                    .levelCount     = 1,
-                    .baseArrayLayer = 0,
-                    .layerCount     = 1,
-                },
-        };
-
-        VkImageView view;
-        vkCreateImageView(device->getVkDevice(), &createInfo, nullptr, &view);
-        imageViews.push(view);
+        imageViews.push(new ImageView(device, img, format));
     }
 }
 
 void Surface::destroySwapchain() {
     if (swapchain) {
         vkDestroySwapchainKHR(device->getVkDevice(), swapchain, nullptr);
-        for (auto view : imageViews) vkDestroyImageView(device->getVkDevice(), view, nullptr);
+        for (auto view : imageViews) delete view;
         images.clear();
         imageViews.clear();
     }
 }
 
-u32 Surface::getNextImageIndex(u64 timeout, Semaphore* semaphore, Fence* fence) {
-    u32 idx;
+VkResult Surface::getNextImageIndex(u64 timeout, Semaphore* semaphore, Fence* fence, u32& idx) {
     VkSemaphore vkSemaphore = semaphore ? semaphore->getVkSemaphore() : nullptr;
     VkFence vkFence         = fence ? fence->getVkFence() : nullptr;
-    vkAcquireNextImageKHR(device->getVkDevice(), swapchain, timeout, vkSemaphore, vkFence, &idx);
-    return idx;
+    return vkAcquireNextImageKHR(device->getVkDevice(), swapchain, timeout, vkSemaphore, vkFence, &idx);
 }

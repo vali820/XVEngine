@@ -20,13 +20,19 @@ class Device {
 
     VmaAllocator allocator{};
 
+    VkPhysicalDeviceDescriptorBufferFeaturesEXT supportedDescriptorBufferFeatures{};
     VkPhysicalDeviceShaderObjectFeaturesEXT supportedShaderObjectFeatures{};
     VkPhysicalDeviceVulkan13Features supportedVulkan13Features{};
     VkPhysicalDeviceFeatures2 supportedFeatures2{};
 
+    VkPhysicalDeviceDescriptorBufferFeaturesEXT enabledDescriptorBufferFeatures{
+        .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+        .pNext            = nullptr,
+        .descriptorBuffer = true,
+    };
     VkPhysicalDeviceShaderObjectFeaturesEXT enabledShaderObjectFeatures{
         .sType        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-        .pNext        = nullptr,
+        .pNext        = &enabledDescriptorBufferFeatures,
         .shaderObject = true,
     };
     VkPhysicalDeviceVulkan13Features enabledVulkan13Features{
