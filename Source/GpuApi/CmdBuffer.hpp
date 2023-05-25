@@ -5,6 +5,7 @@
 #include "Common.hpp"
 
 class Device;
+class Buffer;
 
 class CmdPool {
     friend Device;
@@ -14,7 +15,7 @@ class CmdPool {
     VkCommandPool pool;
     const bool owned;
 
-    CmdPool(Device* _device, VkCommandPool _pool, bool _owned = true);
+    CmdPool(Device* device, VkCommandPool pool, bool _owned = true);
 
    public:
     ~CmdPool();
@@ -33,7 +34,7 @@ class CmdBuffer {
     VkCommandBuffer cmdBuffer{};
 
    public:
-    explicit CmdBuffer(CmdPool* _cmdPool, CmdBufferLevel _level = CmdBufferLevel::Primary);
+    explicit CmdBuffer(CmdPool* cmdPool, CmdBufferLevel level = CmdBufferLevel::Primary);
     ~CmdBuffer();
 
     // Basic
@@ -48,6 +49,7 @@ class CmdBuffer {
 
     // Binding
     void bindShader(VkShaderStageFlagBits stage, Shader* shader);
+    void bindVertexBuffer(Buffer* buffer, u32 bindingIndex);
 
     void setViewport(VkViewport viewport);
     void setScissor(VkRect2D scissor);

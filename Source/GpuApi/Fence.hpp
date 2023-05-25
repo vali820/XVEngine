@@ -12,7 +12,7 @@ class Fence {
     VkFence fence{};
 
    public:
-    explicit Fence(Device* _device, bool createSignaled = false);
+    explicit Fence(Device* device, bool createSignaled = false);
     ~Fence();
 
     bool isSignaled();

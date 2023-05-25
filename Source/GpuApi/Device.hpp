@@ -4,6 +4,7 @@
 
 #include "Common.hpp"
 #include "Core/Core.hpp"
+#include "ThirdParty/vma/vk_mem_alloc.h"
 
 #define DEFCMD(x) \
     PFN_##x x {}
@@ -16,6 +17,8 @@ class Device {
     VkInstance instance{};
     VkPhysicalDevice physicalDevice{};
     VkDevice device{};
+
+    VmaAllocator allocator{};
 
     VkPhysicalDeviceShaderObjectFeaturesEXT supportedShaderObjectFeatures{};
     VkPhysicalDeviceVulkan13Features supportedVulkan13Features{};
@@ -87,6 +90,7 @@ class Device {
     inline VkDevice getVkDevice() { return device; }
     inline VkInstance getVkInstance() { return instance; }
     inline VkPhysicalDevice getVkPhysicalDevice() { return physicalDevice; }
+    inline VmaAllocator getVmaAllocator() { return allocator; }
 
    private:
     void createInstance();
@@ -94,6 +98,7 @@ class Device {
     void getPhysicalDeviceFeatures(VkPhysicalDevice pd);
     void setupQueueCreateInfos();
     void createDevice();
+    void createAllocator();
     void getFunctionPointers();
     void createCommandPools();
 };

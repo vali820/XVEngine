@@ -15,7 +15,7 @@ class Surface {
     Window* window;
 
     VkSurfaceKHR surface{};
-    VkSwapchainKHR swapchain{};
+    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 
     VkFormat format{};
     VkColorSpaceKHR colorSpace{};
@@ -31,7 +31,7 @@ class Surface {
     Vec<VkImageView> imageViews;
 
    public:
-    Surface(Device* _device, Window* _window);
+    Surface(Device* device, Window* window);
 
     ~Surface();
 

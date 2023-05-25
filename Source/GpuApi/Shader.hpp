@@ -12,7 +12,7 @@ class Shader {
     VkShaderEXT shader{};
 
    public:
-    Shader(Device* _device, const ShaderDesc& desc);
+    Shader(Device* device, const ShaderDesc& desc);
 
     ~Shader();
 

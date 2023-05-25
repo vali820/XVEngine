@@ -28,6 +28,7 @@ Device::Device() {
     pickPhysicalDevice();
     setupQueueCreateInfos();
     createDevice();
+    createAllocator();
     getFunctionPointers();
     createCommandPools();
 }
@@ -40,6 +41,8 @@ Device::~Device() {
     delete graphicsQueue;
     delete computeQueue;
     delete transferQueue;
+
+    vmaDestroyAllocator(allocator);
 
     vkDestroyDevice(device, nullptr);
     vkDestroyInstance(instance, nullptr);
@@ -143,8 +146,8 @@ void Device::setupQueueCreateInfos() {
     queuePriorities = Vec<f32>(prioritiesCount, 1.0f);
     u32 idx         = 0;
     for (auto& qInfo : queueCreateInfos) {
-        qInfo.pQueuePriorities = queuePriorities.getData() + idx;
-        idx += qInfo.queueCount;
+        qInfo.pQueuePriorities  = queuePriorities.getData() + idx;
+        idx                    += qInfo.queueCount;
     }
 }
 
@@ -164,6 +167,16 @@ void Device::createDevice() {
     graphicsQueue = new Queue(this, graphicsQueueFamily);
     computeQueue  = new Queue(this, computeQueueFamily);
     transferQueue = new Queue(this, transferQueueFamily);
+}
+
+void Device::createAllocator() {
+    VmaAllocatorCreateInfo createInfo{
+        .physicalDevice   = physicalDevice,
+        .device           = device,
+        .instance         = instance,
+        .vulkanApiVersion = VK_API_VERSION_1_3,
+    };
+    vmaCreateAllocator(&createInfo, &allocator);
 }
 
 #define GETCMD(x) x = (PFN_##x)vkGetDeviceProcAddr(device, #x)

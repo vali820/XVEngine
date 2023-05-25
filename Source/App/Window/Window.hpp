@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "../Event/Event.hpp"
 #include "Core/Core.hpp"
 
@@ -26,17 +24,7 @@ class Window {
     void keyReleasedF(const KeyReleasedEvent& e);
 
    public:
-    enum class Mode {
-        Windowed,
-        Borderless,
-        Fullscreen,
-    };
-
-    static Ptr<Window> create(u32 _width, u32 _height);
-
     virtual ~Window() = default;
-
-    virtual void update() = 0;
 
     void setExitCallback(const std::function<void()>& f);
     void setResizeCallback(const std::function<void(const ResizeEvent&)>& f);
@@ -53,7 +41,7 @@ class Window {
     virtual void setMaximized(bool value)           = 0;
     virtual void setFullscreen(bool value)          = 0;
     virtual void resize(u32 width, u32 height)      = 0;
-    virtual void setTitle(const std::string& title) = 0;
+    virtual void setTitle(const String& title) = 0;
 
     virtual u32 getWidth()  = 0;
     virtual u32 getHeight() = 0;

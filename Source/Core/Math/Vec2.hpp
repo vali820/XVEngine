@@ -1,5 +1,7 @@
 #pragma once
 
+#include <format>
+
 #include "../Types.hpp"
 
 template <typename T>

@@ -1,5 +1,6 @@
 #include "CmdBuffer.hpp"
 
+#include "Buffer.hpp"
 #include "Common.hpp"
 #include "Device.hpp"
 #include "Shader.hpp"
@@ -67,6 +68,12 @@ void CmdBuffer::draw(u32 vertexCount, u32 instanceCount, u32 firstVertex, u32 fi
 void CmdBuffer::bindShader(VkShaderStageFlagBits stage, Shader *shader) {
     VkShaderEXT s = shader->getVkShader();
     device->vkCmdBindShadersEXT(cmdBuffer, 1, &stage, &s);
+}
+
+void CmdBuffer::bindVertexBuffer(Buffer *buffer, u32 bindingIndex) {
+    VkBuffer buf = buffer->getVkBuffer();
+    u64 offset   = 0;
+    vkCmdBindVertexBuffers(cmdBuffer, bindingIndex, 1, &buf, &offset);
 }
 
 void CmdBuffer::barrier(const Vec<VkImageMemoryBarrier2> &imageBarriers) {

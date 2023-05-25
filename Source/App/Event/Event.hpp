@@ -218,13 +218,13 @@ class KeyReleasedEvent {
 };
 
 template <>
-struct std::formatter<MouseButton> : std::formatter<std::string> {
+struct std::formatter<MouseButton> : std::formatter<String> {
     auto format(const MouseButton& b, auto& ctx) const {
         return std::format_to(ctx.out(), "{}", mouseButtonToString(b));
     }
 };
 template <>
-struct std::formatter<Modifiers> : std::formatter<std::string> {
+struct std::formatter<Modifiers> : std::formatter<String> {
     auto format(const Modifiers& m, auto& ctx) const {
         std::string out;
         if (m.shift()) out += "Shift | ";
@@ -237,41 +237,41 @@ struct std::formatter<Modifiers> : std::formatter<std::string> {
     }
 };
 template <>
-struct std::formatter<Key> : std::formatter<std::string> {
+struct std::formatter<Key> : std::formatter<String> {
     auto format(const Key& k, auto& ctx) const { return std::format_to(ctx.out(), "{}", keyToString(k)); }
 };
 template <>
-struct std::formatter<ResizeEvent> : std::formatter<std::string> {
+struct std::formatter<ResizeEvent> : std::formatter<String> {
     auto format(const ResizeEvent& e, auto& ctx) const {
         return std::format_to(ctx.out(), "Resize(width: {}, height: {})", e.width, e.height);
     }
 };
 template <>
-struct std::formatter<MouseMoveEvent> : std::formatter<std::string> {
+struct std::formatter<MouseMoveEvent> : std::formatter<String> {
     auto format(const MouseMoveEvent& e, auto& ctx) const {
         return std::format_to(ctx.out(), "MouseMove(x: {}, y: {}, dx: {}, dy: {})", e.x, e.y, e.dx, e.dy);
     }
 };
 template <>
-struct std::formatter<MouseButtonPressedEvent> : std::formatter<std::string> {
+struct std::formatter<MouseButtonPressedEvent> : std::formatter<String> {
     auto format(const MouseButtonPressedEvent& e, auto& ctx) const {
         return std::format_to(ctx.out(), "MouseButtonPressed({})", e.button);
     }
 };
 template <>
-struct std::formatter<MouseButtonReleasedEvent> : std::formatter<std::string> {
+struct std::formatter<MouseButtonReleasedEvent> : std::formatter<String> {
     auto format(const MouseButtonReleasedEvent& e, auto& ctx) const {
         return std::format_to(ctx.out(), "MouseButtonReleased({})", e.button);
     }
 };
 template <>
-struct std::formatter<KeyPressedEvent> : std::formatter<std::string> {
+struct std::formatter<KeyPressedEvent> : std::formatter<String> {
     auto format(const KeyPressedEvent& e, auto& ctx) const {
         return std::format_to(ctx.out(), "KeyPressed(key: {}, modifiers: {})", e.key, e.modifiers);
     }
 };
 template <>
-struct std::formatter<KeyReleasedEvent> : std::formatter<std::string> {
+struct std::formatter<KeyReleasedEvent> : std::formatter<String> {
     auto format(const KeyReleasedEvent& e, auto& ctx) const {
         return std::format_to(ctx.out(), "KeyReleased(key: {}, modifiers: {})", e.key, e.modifiers);
     }

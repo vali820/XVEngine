@@ -1,22 +1,11 @@
 #pragma once
 
 #include <cstring>
-#include <iterator>
+#include <format>
 #include <memory>
 
+#include "Iterator.hpp"
 #include "Types.hpp"
-
-template <typename T>
-class Iterator {
-   private:
-    T* ptr;
-
-   public:
-    explicit Iterator(T* ptr) noexcept : ptr(ptr) {}
-    bool operator!=(Iterator rhs) { return ptr != rhs.ptr; }
-    T& operator*() { return *ptr; }
-    void operator++() { ptr++; }
-};
 
 /**
  * @brief Dynamically allocated array container.
@@ -26,7 +15,7 @@ class Iterator {
 template <typename T>
 class Vec {
    private:
-    T* data = nullptr;
+    T* data  = nullptr;
     u64 size = 0, capacity = 0;
 
    public:
@@ -65,8 +54,8 @@ class Vec {
      * @param v Value to move.
      */
     Vec(Vec&& v) noexcept : size(v.size), capacity(v.capacity), data(v.data) {
-        v.data = nullptr;
-        v.size = 0;
+        v.data     = nullptr;
+        v.size     = 0;
         v.capacity = 0;
     }
 
@@ -83,7 +72,7 @@ class Vec {
 
         destroy();
 
-        size = v.size;
+        size     = v.size;
         capacity = v.size;
         allocate();
         memcpy(data, v.data, size * sizeof(T));
@@ -102,10 +91,10 @@ class Vec {
      */
     Vec& operator=(Vec&& v) noexcept {
         destroy();
-        size = v.size;
+        size     = v.size;
         capacity = v.capacity;
-        data = v.data;
-        v.data = nullptr;
+        data     = v.data;
+        v.data   = nullptr;
         return *this;
     }
 
@@ -141,7 +130,7 @@ class Vec {
      * @param x Value to copy into the new element.
      */
     void push(const T& x) {
-        if (size == capacity) reallocate(capacity * 2);
+        if (size >= capacity) reallocate(capacity * 2);
         data[size] = x;
         size++;
     }
@@ -152,9 +141,24 @@ class Vec {
      * @param x Value to move into the new element.
      */
     void push(T&& x) {
-        if (size == capacity) reallocate(capacity * 2);
+        if (size >= capacity) reallocate(capacity * 2);
         data[size] = x;
         size++;
+    }
+
+    /**
+     * @brief Remove and element from the container.
+     *
+     * @param index The index of the item to remove.
+     */
+    void remove(u64 index) {
+        if (index >= size) return;
+
+        data[index].~T();
+        if (index != size - 1) {  // Move elements back
+            memmove(data + index, data + index + 1, (size - index - 1) * sizeof(T));
+        }
+        size--;
     }
 
     /**
@@ -254,5 +258,18 @@ class Vec {
 
     void callDestructors(u64 i = 0) {
         for (; i < size; i++) std::destroy_at(data + i);
+    }
+};
+
+template <typename T>
+struct std::formatter<Vec<T>> : std::formatter<T> {
+    auto format(const Vec<T>& v, auto& ctx) const {
+        std::string s;
+        for (u64 i = 0; i < v.getSize(); i++) {
+            s += std::format("{}", v[i]);
+            if (i != v.getSize() - 1) s += ", ";
+        }
+
+        return std::format_to(ctx.out(), "{{{}}}", s);
     }
 };

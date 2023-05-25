@@ -1,21 +1,5 @@
 #include "Window.hpp"
 
-#ifdef __linux__
-
-#include "WaylandWindow.hpp"
-#include "X11Window.hpp"
-
-bool wayland = std::getenv("XDG_SESSION_TYPE") == std::string("wayland");
-
-Ptr<Window> Window::create(u32 _width, u32 _height) {
-    if (wayland)
-        return Ptr<WaylandWindow>(new WaylandWindow(_width, _height));
-    else
-        return Ptr<X11Window>(new X11Window(_width, _height));
-}
-
-#endif
-
 void Window::exitF() {
     if (_exitF) _exitF();
 }

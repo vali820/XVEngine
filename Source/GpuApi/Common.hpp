@@ -5,6 +5,9 @@
 
 #include "Core/Core.hpp"
 
+const u32 COLOR_COMPONENTS_ALL =
+    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
 struct SurfaceConfig {
     VkFormat format;
     VkColorSpaceKHR colorSpace;

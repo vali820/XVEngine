@@ -1,11 +1,13 @@
 #pragma once
 
 #include <format>
+#include <fstream>
+#include <functional>
 #include <iostream>
 #include <memory>
-#include <string>
 
 #include "Ptr.hpp"
+#include "String.hpp"
 #include "Types.hpp"
 #include "Vec.hpp"
 

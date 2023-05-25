@@ -13,7 +13,7 @@ class Semaphore {
     const bool _isTimeline;
 
    public:
-    explicit Semaphore(Device* _device, bool timeline = false, u64 value = 0);
+    explicit Semaphore(Device* device, bool timeline = false, u64 value = 0);
     ~Semaphore();
 
     u64 getValue();

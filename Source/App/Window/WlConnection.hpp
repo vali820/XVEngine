@@ -3,14 +3,18 @@
 #include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
 
+#include "../Event/Event.hpp"
+#include "Core/Core.hpp"
 #include "ThirdParty/wayland/xdg-decoration.h"
 #include "ThirdParty/wayland/xdg-shell.h"
-#include "Window.hpp"
 
-class WaylandWindow : public Window {
-    friend Window;
+class WlWindow;
 
-   private:
+class WlConnection {
+    // WlConnection and WlWindow are tightly coupled
+    // This may be bad practice, but keeping them separate is impossible as they need each other to function
+    friend class WlWindow;
+
     enum {
         PointerEventMaskEnter                 = 1 << 0,
         PointerEventMaskLeave                 = 1 << 1,
@@ -45,30 +49,25 @@ class WaylandWindow : public Window {
     wl_display* display;
     wl_registry* registry;
 
-    wl_surface* surface;
-    xdg_surface* xdgSurface;
-    xdg_toplevel* toplevel;
+    xkb_context* context;
+    xkb_keymap* keymap{};
+    xkb_state* state{};
+    xkb_state* textState{};
 
     wl_compositor* compositor{};
     xdg_wm_base* wmBase{};
     wl_seat* seat{};
     zxdg_decoration_manager_v1* decorationManager{};
 
-    wl_pointer* pointer{};
     wl_keyboard* keyboard{};
+    wl_pointer* pointer{};
 
-    i32 width, height;
+    Vec<WlWindow*> windows;
+    wl_surface* pointerCurrentSurface{};
+    wl_surface* keyboardCurrentSurface{};
 
-    // Current mouse event
     WlPointerEvent pointerEvent{};
-
-    // For delta mouse movement
-    i32 lastMouseX = 0, lastMouseY = 0;
-
-    xkb_context* context;
-    xkb_keymap* keymap{};
-    xkb_state* state{};
-    xkb_state* textState{};
+    i32 lastMouseX{}, lastMouseY{};
 
     u32 shiftIdx{};
     u32 ctrlIdx{};
@@ -78,26 +77,10 @@ class WaylandWindow : public Window {
     Modifiers modifiers{0};
 
    public:
-    WaylandWindow(u32 width, u32 height);
+    WlConnection();
+    ~WlConnection();
 
-    ~WaylandWindow() override;
-
-    inline wl_display* getWlDisplay() { return display; }
-    inline wl_surface* getWlSurface() { return surface; }
-
-    void update() override;
-
-    void show() override;
-    void hide() override;
-
-    void minimize() override;
-    void setMaximized(bool value) override;
-    void setFullscreen(bool value) override;
-    void resize(u32 width, u32 height) override;
-    void setTitle(const std::string& title) override;
-
-    inline u32 getWidth() override { return width; }
-    inline u32 getHeight() override { return height; }
+    void update();
 
    private:
     const wl_registry_listener registryListener{
@@ -112,23 +95,6 @@ class WaylandWindow : public Window {
         .ping = wmBaseHandlePing,
     };
     static void wmBaseHandlePing(void* data, xdg_wm_base* wmBase, u32 serial);
-
-    const xdg_surface_listener xdgSurfaceListener{
-        .configure = xdgSurfaceHandleConfigure,
-    };
-    static void xdgSurfaceHandleConfigure(void* data, xdg_surface* surface, u32 serial);
-
-    const xdg_toplevel_listener toplevelListener{
-        .configure        = toplevelHandleConfigure,
-        .close            = toplevelHandleClose,
-        .configure_bounds = toplevelHandleConfigureBounds,
-        .wm_capabilities  = toplevelHandleWmCapabilities,
-    };
-    static void toplevelHandleConfigure(void* data, xdg_toplevel* toplevel, i32 width, i32 height,
-                                        wl_array* array);
-    static void toplevelHandleClose(void* data, xdg_toplevel* toplevel);
-    static void toplevelHandleConfigureBounds(void* data, xdg_toplevel* toplevel, i32 width, i32 height);
-    static void toplevelHandleWmCapabilities(void* data, xdg_toplevel* toplevel, wl_array* capabilities);
 
     const wl_seat_listener seatListener{
         .capabilities = seatHandleCapabilities,

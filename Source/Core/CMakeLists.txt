@@ -1,1 +1,1 @@
-add_library(Core SHARED dummy.cpp)
+add_library(Core String.cpp)

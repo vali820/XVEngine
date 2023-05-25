@@ -12,7 +12,7 @@ class DescriptorSetLayout {
     VkDescriptorSetLayout layout{};
 
    public:
-    DescriptorSetLayout(Device* _device, const Vec<VkDescriptorSetLayoutBinding>& bindings);
+    DescriptorSetLayout(Device* device, const Vec<VkDescriptorSetLayoutBinding>& bindings);
 
     ~DescriptorSetLayout();
 

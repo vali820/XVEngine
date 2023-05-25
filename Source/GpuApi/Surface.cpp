@@ -7,13 +7,11 @@
 
 // clang-format off
 #ifdef __linux__
-#include <xcb/xcb.h>
-#include <vulkan/vulkan_xcb.h>
 #include "App/Window/X11Window.hpp"
+#include <vulkan/vulkan_xcb.h>
 
-#include <wayland-client.h>
+#include "App/Window/WlWindow.hpp"
 #include <vulkan/vulkan_wayland.h>
-#include "App/Window/WaylandWindow.hpp"
 #endif
 // clang-format on
 
@@ -35,9 +33,9 @@ void Surface::configure(const SurfaceConfig& config) {
     bool formatOk = false;
     for (const auto& f : supportedFormats) {
         if (f.format == config.format and f.colorSpace == config.colorSpace) {
-            format = config.format;
+            format     = config.format;
             colorSpace = config.colorSpace;
-            formatOk = true;
+            formatOk   = true;
             break;
         }
     }
@@ -47,7 +45,7 @@ void Surface::configure(const SurfaceConfig& config) {
     bool presentModeOk = false;
     for (const auto& pm : supportedPresentModes) {
         if (pm == config.presentMode) {
-            presentMode = config.presentMode;
+            presentMode   = config.presentMode;
             presentModeOk = true;
             break;
         }
@@ -63,7 +61,6 @@ void Surface::configure(const SurfaceConfig& config) {
     } else
         throw std::runtime_error("Extent not supported");
 
-    destroySwapchain();
     createSwapchain();
 }
 
@@ -71,14 +68,14 @@ void Surface::createSurface() {
 #ifdef __linux__
     if (auto x11Window = dynamic_cast<X11Window*>(window)) {
         VkXcbSurfaceCreateInfoKHR createInfo{
-            .sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
+            .sType      = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
             .connection = x11Window->getXcbConnection(),
-            .window = x11Window->getXcbWindowId(),
+            .window     = x11Window->getXcbWindow(),
         };
         vkCreateXcbSurfaceKHR(device->getVkInstance(), &createInfo, nullptr, &surface);
-    } else if (auto waylandWindow = dynamic_cast<WaylandWindow*>(window)) {
+    } else if (auto waylandWindow = dynamic_cast<WlWindow*>(window)) {
         VkWaylandSurfaceCreateInfoKHR createInfo{
-            .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
+            .sType   = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
             .display = waylandWindow->getWlDisplay(),
             .surface = waylandWindow->getWlSurface(),
         };
@@ -114,22 +111,27 @@ void Surface::createSwapchain() {
         minImageCount = surfaceCaps.maxImageCount;
 
     VkSwapchainCreateInfoKHR createInfo{
-        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = surface,
-        .minImageCount = minImageCount,
-        .imageFormat = format,
-        .imageColorSpace = colorSpace,
-        .imageExtent = extent,
+        .sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        .surface          = surface,
+        .minImageCount    = minImageCount,
+        .imageFormat      = format,
+        .imageColorSpace  = colorSpace,
+        .imageExtent      = extent,
         .imageArrayLayers = 1,
-        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        .imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        .preTransform = surfaceCaps.currentTransform,
-        .compositeAlpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
-        .presentMode = presentMode,
-        .clipped = VK_TRUE,
+        .preTransform     = surfaceCaps.currentTransform,
+        .compositeAlpha   = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+        .presentMode      = presentMode,
+        .clipped          = VK_TRUE,
+        .oldSwapchain     = swapchain,
     };
 
-    vkCreateSwapchainKHR(device->getVkDevice(), &createInfo, nullptr, &swapchain);
+    VkSwapchainKHR newSwapchain;
+    vkCreateSwapchainKHR(device->getVkDevice(), &createInfo, nullptr, &newSwapchain);
+
+    destroySwapchain();
+    swapchain = newSwapchain;
 
     // Get images
     vkGetSwapchainImagesKHR(device->getVkDevice(), swapchain, &imageCount, nullptr);
@@ -142,10 +144,10 @@ void Surface::createSwapchain() {
 void Surface::createImageViews() {
     for (const auto& img : images) {
         VkImageViewCreateInfo createInfo{
-            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image = img,
+            .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .image    = img,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = format,
+            .format   = format,
             .components =
                 {
                     .r = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -155,11 +157,11 @@ void Surface::createImageViews() {
                 },
             .subresourceRange =
                 {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = 1,
+                    .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel   = 0,
+                    .levelCount     = 1,
                     .baseArrayLayer = 0,
-                    .layerCount = 1,
+                    .layerCount     = 1,
                 },
         };
 
@@ -181,7 +183,7 @@ void Surface::destroySwapchain() {
 u32 Surface::getNextImageIndex(u64 timeout, Semaphore* semaphore, Fence* fence) {
     u32 idx;
     VkSemaphore vkSemaphore = semaphore ? semaphore->getVkSemaphore() : nullptr;
-    VkFence vkFence = fence ? fence->getVkFence() : nullptr;
+    VkFence vkFence         = fence ? fence->getVkFence() : nullptr;
     vkAcquireNextImageKHR(device->getVkDevice(), swapchain, timeout, vkSemaphore, vkFence, &idx);
     return idx;
 }

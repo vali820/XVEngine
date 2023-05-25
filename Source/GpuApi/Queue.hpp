@@ -18,7 +18,7 @@ class Queue {
     VkQueue queue{};
     u32 familyIndex;
 
-    Queue(Device* _device, u32 _familyIndex);
+    Queue(Device* device, u32 familyIndex);
 
    public:
     void submit(const Vec<CmdBuffer*>& cmdBuffers, const Vec<Semaphore*>& waitSemaphores,

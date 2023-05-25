@@ -4,39 +4,37 @@
 
 #include "Window.hpp"
 
+class X11Connection;
+
 class X11Window : public Window {
-    friend Window;
+    friend class X11Connection;
 
    private:
-    xcb_connection_t* con;
+    X11Connection* connection;
+    xcb_connection_t* xcbCon;
     xcb_screen_t* screen;
     xcb_window_t id;
 
-    xcb_atom_t deleteWindowAtom;
-    xcb_atom_t protocolsAtom;
-
-    X11Window(u32 _width, u32 _height);
-
    public:
+    X11Window(X11Connection* connection, u32 width, u32 height);
     ~X11Window() override;
 
-    void update() override;
+    void update();
 
     void show() override;
     void hide() override;
     void minimize() override;
     void setMaximized(bool value) override;
     void setFullscreen(bool value) override;
-    void setTitle(const std::string& title) override;
+    void setTitle(const String& title) override;
     void resize(u32 width, u32 height) override;
 
     u32 getWidth() override;
     u32 getHeight() override;
 
-    inline xcb_connection_t* getXcbConnection() { return con; }
-    [[nodiscard]] inline xcb_window_t getXcbWindowId() const { return id; }
+    xcb_connection_t* getXcbConnection();
+    [[nodiscard]] inline xcb_window_t getXcbWindow() const { return id; }
 
    private:
-    void handleEvent(xcb_generic_event_t* event) const;
-    xcb_atom_t getInternAtom(const std::string& name);
+    void handleEvent(xcb_generic_event_t* event);
 };
