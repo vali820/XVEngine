@@ -80,6 +80,12 @@ class Device {
     DEFCMD(vkDestroyShaderEXT);
     DEFCMD(vkGetShaderBinaryDataEXT);
 
+    DEFCMD(vkCmdBindDescriptorBuffersEXT);
+
+    DEFCMD(vkGetDescriptorSetLayoutSizeEXT);
+    DEFCMD(vkGetDescriptorSetLayoutBindingOffsetEXT);
+    DEFCMD(vkGetDescriptorEXT);
+
     Device();
     ~Device();
 

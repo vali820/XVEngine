@@ -31,49 +31,53 @@ class Vec4 {
     Vec3<T> toVec3() const { return {x, y, z}; }
 
     Vec4& operator+=(Vec4& v) {
-        x += v.x;
-        y += v.y;
-        z += v.z;
-        w += v.w;
+        x += v.x, y += v.y, z += v.z, w += v.w;
         return *this;
     }
-
     Vec4& operator-=(Vec4& v) {
-        x -= v.x;
-        y -= v.y;
-        z -= v.z;
-        w -= v.w;
+        x -= v.x, y -= v.y, z -= v.z, w -= v.w;
         return *this;
     }
-
+    Vec4& operator*=(Vec4& v) {
+        x *= v.x, y *= v.y, z *= v.z, w *= v.w;
+        return *this;
+    }
+    Vec4& operator/=(Vec4& v) {
+        x /= v.x, y /= v.y, z /= v.z, w /= v.w;
+        return *this;
+    }
+    Vec4& operator+=(T s) {
+        x += s, y += s, z += s, w += s;
+        return *this;
+    }
+    Vec4& operator-=(T s) {
+        x -= s, y -= s, z -= s, w -= s;
+        return *this;
+    }
     Vec4& operator*=(T s) {
-        x *= s;
-        y *= s;
-        z *= s;
-        w *= s;
+        x *= s, y *= s, z *= s, w *= s;
         return *this;
     }
-
     Vec4& operator/=(T s) {
-        x /= s;
-        y /= s;
-        z /= s;
-        w /= s;
+        x /= s, y /= s, z /= s, w /= s;
         return *this;
     }
 
-    Vec4 operator+(const Vec4& v) { return {x + v.x, y + v.y, z + v.z, w + v.w}; }
+    Vec4 operator+(const Vec4& v) const { return {x + v.x, y + v.y, z + v.z, w + v.w}; }
+    Vec4 operator-(const Vec4& v) const { return {x - v.x, y - v.y, z - v.z, w - v.w}; }
+    Vec4 operator*(const Vec4& v) const { return {x * v.x, y * v.y, z * v.z, w * v.w}; }
+    Vec4 operator/(const Vec4& v) const { return {x / v.x, y / v.y, z / v.z, w / v.w}; }
+    Vec4 operator+(T s) const { return {x + s, y + s, z + s, w + s}; }
+    Vec4 operator-(T s) const { return {x - s, y - s, z - s, w - s}; }
+    Vec4 operator*(T s) const { return {x * s, y * s, z * s, w * s}; }
+    Vec4 operator/(T s) const { return {x / s, y / s, z / s, w / s}; }
 
-    Vec4 operator-(const Vec4& v) { return {x - v.x, y - v.y, z - v.z, w - v.w}; }
+    Vec4 operator-() const { return {-x, -y, -z, -w}; }
 
-    Vec4 operator*(T s) { return {x * s, y * s, z * s, w * s}; }
+    bool operator==(const Vec4& v) const { return x == v.x and y == v.y and z == v.z and w == v.w; }
 
-    Vec4 operator/(T s) { return {x / s, y / s, z / s, w / s}; }
-
-    bool operator==(const Vec4& v) { return x == v.x and y == v.y and z == v.z and w == v.w; }
-
-    T& operator[](u32 i) { return &x[i]; }
-    const T& operator[](u32 i) const { return &x[i]; }
+    T& operator[](u32 i) { return (&x)[i]; }
+    const T& operator[](u32 i) const { return (&x)[i]; }
 };
 
 using FVec4 = Vec4<f32>;

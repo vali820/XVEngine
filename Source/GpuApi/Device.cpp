@@ -21,6 +21,7 @@ static const Vec<const char*> deviceExtensions = {
     "VK_KHR_swapchain",
     "VK_EXT_shader_object",
     "VK_EXT_extended_dynamic_state3",
+    "VK_EXT_descriptor_buffer",
 };
 
 Device::Device() {
@@ -201,6 +202,12 @@ void Device::getFunctionPointers() {
     GETCMD(vkCreateShadersEXT);
     GETCMD(vkDestroyShaderEXT);
     GETCMD(vkGetShaderBinaryDataEXT);
+
+    GETCMD(vkCmdBindDescriptorBuffersEXT);
+
+    GETCMD(vkGetDescriptorSetLayoutSizeEXT);
+    GETCMD(vkGetDescriptorSetLayoutBindingOffsetEXT);
+    GETCMD(vkGetDescriptorEXT);
 }
 
 void Device::createCommandPools() {

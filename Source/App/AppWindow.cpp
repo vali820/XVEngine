@@ -1,6 +1,7 @@
 #include "AppWindow.hpp"
 
 #include "App.hpp"
+#include "GpuApi/GpuApi.hpp"
 #include "Window/Window.hpp"
 #include "Window/WindowConnection.hpp"
 
@@ -100,11 +101,16 @@ AppWindow::AppWindow(App* _app, const String& title) : app(_app), device(app->ge
         }},
     };
     ShaderDesc vsDesc = {
-        .stage     = VK_SHADER_STAGE_VERTEX_BIT,
-        .nextStage = VK_SHADER_STAGE_FRAGMENT_BIT,
-        .codeType  = VK_SHADER_CODE_TYPE_SPIRV_EXT,
-        .code      = readFile("../vs.srv"),
-        .name      = "main",
+        .stage              = VK_SHADER_STAGE_VERTEX_BIT,
+        .nextStage          = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .codeType           = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .code               = readFile("../vs.srv"),
+        .name               = "main",
+        .pushConstantRanges = {VkPushConstantRange{
+            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+            .offset     = 0,
+            .size       = 4,
+        }},
     };
     ShaderDesc fsDesc = {
         .stage     = VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -123,16 +129,17 @@ AppWindow::AppWindow(App* _app, const String& title) : app(_app), device(app->ge
         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
     };
 
-    u64 verticesSize = vertices.getSize() * sizeof(Vertex);
-    vertexBuffer     = new Buffer(device,
-                              verticesSize,
-                              VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                              VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-    std::memcpy(vertexBuffer->getData(), vertices.getData(), verticesSize);
+    Vec<u32> indices{0, 1, 2};
+
+    vertexBuffer = createBufferLocal(
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vertices.getData(), vertices.getSize() * sizeof(Vertex));
+    indexBuffer = createBufferLocal(
+        VK_BUFFER_USAGE_INDEX_BUFFER_BIT, indices.getData(), indices.getSize() * sizeof(u32));
 }
 
 AppWindow::~AppWindow() {
-    delete vertexBuffer;
+    delete descriptorSetLayout;
+    delete vertexBuffer, delete indexBuffer;
     delete vs, delete fs;
     delete imageAvailable, delete renderFinished, delete fence;
     delete cmdBuffer;
@@ -141,6 +148,9 @@ AppWindow::~AppWindow() {
 }
 
 void AppWindow::update() {
+    if (pushConstant > 1.0f) pushConstant = 0.0f;
+    pushConstant += 0.01f;
+
     fence->waitFor(UINT64_MAX);
     fence->reset();
 
@@ -148,6 +158,18 @@ void AppWindow::update() {
 
     renderingInfo.colorAttachments[0].imageView = surface->getImageViews()[imageIndex];
 
+    recordCommandBuffer();
+
+    queue->submit({cmdBuffer},
+                  {imageAvailable},
+                  {renderFinished},
+                  {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+                  fence);
+
+    queue->present({renderFinished}, surface, imageIndex);
+}
+
+void AppWindow::recordCommandBuffer() {
     cmdBuffer->begin();
 
     cmdBuffer->setViewport({0.0f, 0.0f, (f32)width, (f32)height, 0.0f, 1.0f});
@@ -192,22 +214,36 @@ void AppWindow::update() {
     cmdBuffer->bindShader(VK_SHADER_STAGE_FRAGMENT_BIT, fs);
 
     cmdBuffer->bindVertexBuffer(vertexBuffer, 0);
+    cmdBuffer->bindIndexBuffer(indexBuffer, VK_INDEX_TYPE_UINT32);
+
+    cmdBuffer->pushConstant(vs, 0, 4, &pushConstant);
 
     prepareImageForRender(cmdBuffer, surface->getImages()[imageIndex]);
 
     cmdBuffer->beginRendering(renderingInfo);
-    cmdBuffer->draw(3, 1, 0, 0);
+    cmdBuffer->drawIndexed(3, 1, 0, 0, 0);
     cmdBuffer->endRendering();
 
     prepareImageForPresent(cmdBuffer, surface->getImages()[imageIndex]);
 
     cmdBuffer->end();
+}
 
-    queue->submit({cmdBuffer},
-                  {imageAvailable},
-                  {renderFinished},
-                  {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
-                  fence);
+Buffer* AppWindow::createBufferLocal(VkBufferUsageFlags usage, void* data, u64 size) {
+    auto staging =
+        new Buffer(device,
+                   size,
+                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    memcpy(staging->getData(), data, size);
+    auto buffer = new Buffer(device, size, usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 0);
 
-    queue->present({renderFinished}, surface, imageIndex);
+    auto cmd = new CmdBuffer(device->getGraphicsCmdPool());
+    cmd->begin();
+    cmd->copyBuffer(staging, buffer, size);
+    cmd->end();
+    queue->submit({cmd});
+    queue->waitIdle();
+    delete staging;
+    return buffer;
 }

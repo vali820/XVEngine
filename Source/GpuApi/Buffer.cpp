@@ -11,7 +11,7 @@ Buffer::Buffer(Device *_device, u64 _size, VkBufferUsageFlags usage, VmaAllocati
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
     };
     VmaAllocationCreateInfo allocationCreateInfo{
-        .flags = allocationFlags | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+        .flags = allocationFlags,
         .usage = VMA_MEMORY_USAGE_AUTO,
     };
     vmaCreateBuffer(

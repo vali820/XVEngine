@@ -19,37 +19,55 @@ class Vec2 {
         y += v.y;
         return *this;
     }
-
     Vec2& operator-=(Vec2& v) {
         x -= v.x;
         y -= v.y;
         return *this;
     }
-
+    Vec2& operator*=(Vec2& v) {
+        x *= v.x;
+        y *= v.y;
+        return *this;
+    }
+    Vec2& operator/=(Vec2& v) {
+        x /= v.x;
+        y /= v.y;
+        return *this;
+    }
+    Vec2& operator+=(T s) {
+        x += s, y += s;
+        return *this;
+    }
+    Vec2& operator-=(T s) {
+        x -= s, y -= s;
+        return *this;
+    }
     Vec2& operator*=(T s) {
         x *= s;
         y *= s;
         return *this;
     }
-
     Vec2& operator/=(T s) {
         x /= s;
         y /= s;
         return *this;
     }
 
-    Vec2 operator+(const Vec2& rhs) { return {x + rhs.x, y + rhs.y}; }
+    Vec2 operator+(const Vec2& v) const { return {x + v.x, y + v.y}; }
+    Vec2 operator-(const Vec2& v) const { return {x - v.x, y - v.y}; }
+    Vec2 operator*(const Vec2& v) const { return {x * v.x, y * v.y}; }
+    Vec2 operator/(const Vec2& v) const { return {x / v.x, y / v.y}; }
+    Vec2 operator+(T s) const { return {x + s, y + s}; }
+    Vec2 operator-(T s) const { return {x - s, y - s}; }
+    Vec2 operator*(T s) const { return {x * s, y * s}; }
+    Vec2 operator/(T s) const { return {x / s, y / s}; }
 
-    Vec2 operator-(const Vec2& rhs) { return {x - rhs.x, y - rhs.y}; }
+    Vec2 operator-() const { return {-x, -y}; }
 
-    Vec2 operator*(T s) { return {x * s, y * s}; }
+    bool operator==(const Vec2& rhs) const { return x == rhs.x and y == rhs.y; }
 
-    Vec2 operator/(T s) { return {x / s, y / s}; }
-
-    bool operator==(const Vec2& rhs) { return x == rhs.x and y == rhs.y; }
-
-    T& operator[](u32 i) { return &x[i]; }
-    const T& operator[](u32 i) const { return &x[i]; }
+    T& operator[](u32 i) { return (&x)[i]; }
+    const T& operator[](u32 i) const { return (&x)[i]; }
 };
 
 using FVec2 = Vec2<f32>;

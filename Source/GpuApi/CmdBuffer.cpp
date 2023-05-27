@@ -65,6 +65,24 @@ void CmdBuffer::draw(u32 vertexCount, u32 instanceCount, u32 firstVertex, u32 fi
     vkCmdDraw(cmdBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
+void CmdBuffer::drawIndexed(u32 indexCount, u32 instanceCount, u32 firstIndex, i32 vertexOffset,
+                            u32 firstInstance) {
+    vkCmdDrawIndexed(cmdBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
+
+void CmdBuffer::copyBuffer(Buffer *src, Buffer *dst, u64 size, u64 srcOffset, u64 dstOffset) {
+    VkBufferCopy copy{
+        .srcOffset = srcOffset,
+        .dstOffset = dstOffset,
+        .size      = size,
+    };
+    vkCmdCopyBuffer(cmdBuffer, src->getVkBuffer(), dst->getVkBuffer(), 1, &copy);
+}
+
+void CmdBuffer::pushConstant(Shader *shader, u32 offset, u32 size, void *data) {
+    vkCmdPushConstants(cmdBuffer, shader->getVkPipelineLayout(), shader->getStage(), offset, size, data);
+}
+
 void CmdBuffer::bindShader(VkShaderStageFlagBits stage, Shader *shader) {
     VkShaderEXT s = shader->getVkShader();
     device->vkCmdBindShadersEXT(cmdBuffer, 1, &stage, &s);
@@ -74,6 +92,22 @@ void CmdBuffer::bindVertexBuffer(Buffer *buffer, u32 bindingIndex) {
     VkBuffer buf = buffer->getVkBuffer();
     u64 offset   = 0;
     vkCmdBindVertexBuffers(cmdBuffer, bindingIndex, 1, &buf, &offset);
+}
+
+void CmdBuffer::bindIndexBuffer(Buffer *buffer, VkIndexType indexType) {
+    vkCmdBindIndexBuffer(cmdBuffer, buffer->getVkBuffer(), 0, indexType);
+}
+
+void CmdBuffer::bindDescriptorBuffers(const Vec<DescriptorBufferBindingInfo> &bindingInfos) {
+    Vec<VkDescriptorBufferBindingInfoEXT> vkBindingInfos;
+    for (const auto &info : bindingInfos) {
+        vkBindingInfos.push({
+            .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT,
+            .address = info.address,
+            .usage   = info.usage,
+        });
+    }
+    device->vkCmdBindDescriptorBuffersEXT(cmdBuffer, vkBindingInfos.getSize(), vkBindingInfos.getData());
 }
 
 void CmdBuffer::barrier(const Vec<VkImageMemoryBarrier2> &imageBarriers) {

@@ -12,4 +12,5 @@
 #include "Surface.hpp"
 #include "CmdBuffer.hpp"
 #include "Shader.hpp"
+#include "Descriptor.hpp"
 #include "Buffer.hpp"

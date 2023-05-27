@@ -10,8 +10,8 @@ Queue::Queue(Device *_device, u32 _familyIndex) : device(_device), familyIndex(_
 }
 
 void Queue::submit(const Vec<CmdBuffer *> &_cmdBuffers, const Vec<Semaphore *> &_waitSemaphores,
-                   const Vec<Semaphore *> &_signalSemaphores,
-                   const Vec<VkPipelineStageFlags> &waitStageMask, Fence *fence) {
+                   const Vec<Semaphore *> &_signalSemaphores, const Vec<VkPipelineStageFlags> &waitStageMask,
+                   Fence *fence) {
     Vec<VkCommandBuffer> cmdBuffers;
     Vec<VkSemaphore> waitSemaphores;
     Vec<VkSemaphore> signalSemaphores;
@@ -21,14 +21,14 @@ void Queue::submit(const Vec<CmdBuffer *> &_cmdBuffers, const Vec<Semaphore *> &
     for (Semaphore *s : _signalSemaphores) signalSemaphores.push(s->getVkSemaphore());
 
     VkSubmitInfo submitInfo{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .waitSemaphoreCount = (u32)waitSemaphores.getSize(),
-        .pWaitSemaphores = waitSemaphores.getData(),
-        .pWaitDstStageMask = waitStageMask.getData(),
-        .commandBufferCount = (u32)cmdBuffers.getSize(),
-        .pCommandBuffers = cmdBuffers.getData(),
+        .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount   = (u32)waitSemaphores.getSize(),
+        .pWaitSemaphores      = waitSemaphores.getData(),
+        .pWaitDstStageMask    = waitStageMask.getData(),
+        .commandBufferCount   = (u32)cmdBuffers.getSize(),
+        .pCommandBuffers      = cmdBuffers.getData(),
         .signalSemaphoreCount = (u32)signalSemaphores.getSize(),
-        .pSignalSemaphores = signalSemaphores.getData(),
+        .pSignalSemaphores    = signalSemaphores.getData(),
     };
 
     VkFence f = nullptr;
@@ -43,15 +43,17 @@ VkResult Queue::present(const Vec<Semaphore *> &_waitSemaphores, Surface *surfac
     VkSwapchainKHR swapchain = surface->getVkSwapchain();
     VkResult result;
     VkPresentInfoKHR presentInfo{
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = (u32)waitSemaphores.getSize(),
-        .pWaitSemaphores = waitSemaphores.getData(),
-        .swapchainCount = 1,
-        .pSwapchains = &swapchain,
-        .pImageIndices = &imageIndex,
-        .pResults = &result,
+        .pWaitSemaphores    = waitSemaphores.getData(),
+        .swapchainCount     = 1,
+        .pSwapchains        = &swapchain,
+        .pImageIndices      = &imageIndex,
+        .pResults           = &result,
     };
 
     vkQueuePresentKHR(queue, &presentInfo);
     return result;
 }
+
+void Queue::waitIdle() { vkQueueWaitIdle(queue); }

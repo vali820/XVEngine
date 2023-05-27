@@ -69,3 +69,8 @@ struct ImageDesc {
     VkImageUsageFlags usage;
     VkImageLayout initialLayout;
 };
+
+struct DescriptorBufferBindingInfo {
+    u64 address;
+    VkBufferUsageFlags usage;
+};

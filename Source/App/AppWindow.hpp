@@ -35,8 +35,13 @@ class AppWindow {
     u32 imageIndex = 0;
 
     Buffer* vertexBuffer{};
+    Buffer* indexBuffer{};
+
+    DescriptorSetLayout* descriptorSetLayout{};
 
     u32 width = 800, height = 600;
+
+    f32 pushConstant = 0.0f;
 
    public:
     explicit AppWindow(App* app, const String& title);
@@ -45,4 +50,8 @@ class AppWindow {
     void update();
 
     inline App* getApp() { return app; }
+
+   private:
+    void recordCommandBuffer();
+    Buffer* createBufferLocal(VkBufferUsageFlags usage, void* data, u64 size);
 };

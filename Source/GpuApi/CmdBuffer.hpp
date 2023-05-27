@@ -44,12 +44,17 @@ class CmdBuffer {
     void beginRendering(const RenderingInfo& info);
     void endRendering();
     void draw(u32 vertexCount, u32 instanceCount, u32 firstVertex, u32 firstInstance);
+    void drawIndexed(u32 indexCount, u32 instanceCount, u32 firstIndex, i32 vertexOffset, u32 firstInstance);
+    void copyBuffer(Buffer* src, Buffer* dst, u64 size, u64 srcOffset = 0, u64 dstOffset = 0);
+    void pushConstant(Shader* shader, u32 offset, u32 size, void* data);
 
     void barrier(const Vec<VkImageMemoryBarrier2>& imageBarriers);
 
     // Binding
     void bindShader(VkShaderStageFlagBits stage, Shader* shader);
     void bindVertexBuffer(Buffer* buffer, u32 bindingIndex);
+    void bindIndexBuffer(Buffer* buffer, VkIndexType indexType);
+    void bindDescriptorBuffers(const Vec<DescriptorBufferBindingInfo>& bindingInfos);
 
     void setViewport(VkViewport viewport);
     void setScissor(VkRect2D scissor);

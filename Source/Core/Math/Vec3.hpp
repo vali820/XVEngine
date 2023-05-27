@@ -21,45 +21,53 @@ class Vec3 {
     Vec2<T> toVec2() const { return {x, y}; }
 
     Vec3& operator+=(Vec3& v) {
-        x += v.x;
-        y += v.y;
-        z += v.z;
+        x += v.x, y += v.y, z += v.z;
         return *this;
     }
-
     Vec3& operator-=(Vec3& v) {
-        x -= v.x;
-        y -= v.y;
-        z -= v.z;
+        x -= v.x, y -= v.y, z -= v.z;
         return *this;
     }
-
+    Vec3& operator*=(Vec3& v) {
+        x *= v.x, y *= v.y, z *= v.z;
+        return *this;
+    }
+    Vec3& operator/=(Vec3& v) {
+        x /= v.x, y /= v.y, z /= v.z;
+        return *this;
+    }
+    Vec3& operator+=(T s) {
+        x += s, y += s, z += s;
+        return *this;
+    }
+    Vec3& operator-=(T s) {
+        x -= s, y -= s, z -= s;
+        return *this;
+    }
     Vec3& operator*=(T s) {
-        x *= s;
-        y *= s;
-        z *= s;
+        x *= s, y *= s, z *= s;
         return *this;
     }
-
     Vec3& operator/=(T s) {
-        x /= s;
-        y /= s;
-        z /= s;
+        x /= s, y /= s, z /= s;
         return *this;
     }
 
-    Vec3 operator+(const Vec3& v) { return {x + v.x, y + v.y, z + v.z}; }
+    Vec3 operator+(const Vec3& v) const { return {x + v.x, y + v.y, z + v.z}; }
+    Vec3 operator-(const Vec3& v) const { return {x - v.x, y - v.y, z - v.z}; }
+    Vec3 operator*(const Vec3& v) const { return {x * v.x, y * v.y, z * v.z}; }
+    Vec3 operator/(const Vec3& v) const { return {x / v.x, y / v.y, z / v.z}; }
+    Vec3 operator+(T s) const { return {x + s, y + s, z + s}; }
+    Vec3 operator-(T s) const { return {x - s, y - s, z - s}; }
+    Vec3 operator*(T s) const { return {x * s, y * s, z * s}; }
+    Vec3 operator/(T s) const { return {x / s, y / s, z / s}; }
 
-    Vec3 operator-(const Vec3& v) { return {x - v.x, y - v.y, z - v.z}; }
+    Vec3 operator-() const { return {-x, -y, -z}; }
 
-    Vec3 operator*(T s) { return {x * s, y * s, z * s}; }
+    bool operator==(const Vec3& v) const { return x == v.x and y == v.y and z == v.z; }
 
-    Vec3 operator/(T s) { return {x / s, y / s, z / s}; }
-
-    bool operator==(const Vec3& v) { return x == v.x and y == v.y and z == v.z; }
-
-    T& operator[](u32 i) { return &x[i]; }
-    const T& operator[](u32 i) const { return &x[i]; }
+    T& operator[](u32 i) { return (&x)[i]; }
+    const T& operator[](u32 i) const { return (&x)[i]; }
 };
 
 using FVec3 = Vec3<f32>;

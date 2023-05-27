@@ -21,11 +21,13 @@ class Queue {
     Queue(Device* device, u32 familyIndex);
 
    public:
-    void submit(const Vec<CmdBuffer*>& cmdBuffers, const Vec<Semaphore*>& waitSemaphores,
-                const Vec<Semaphore*>& signalSemaphores,
-                const Vec<VkPipelineStageFlags>& waitStageMask, Fence* fence);
+    void submit(const Vec<CmdBuffer*>& cmdBuffers, const Vec<Semaphore*>& waitSemaphores = {},
+                const Vec<Semaphore*>& signalSemaphores        = {},
+                const Vec<VkPipelineStageFlags>& waitStageMask = {}, Fence* fence = nullptr);
 
     VkResult present(const Vec<Semaphore*>& waitSemaphores, Surface* surface, u32 imageIndex);
+
+    void waitIdle();
 
     inline Device* getDevice() { return device; }
     inline VkQueue getVkQueue() { return queue; }
