@@ -22,7 +22,7 @@ UIRenderer::UIRenderer(Device *_device, Surface *_surface, u32 _width, u32 _heig
             .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             .loadOp      = VK_ATTACHMENT_LOAD_OP_CLEAR,
             .storeOp     = VK_ATTACHMENT_STORE_OP_STORE,
-            .clearValue  = {.color = {.float32 = {0.0, 0.0, 0.0, 1.0}}},
+            .clearValue  = {.color = {.float32 = {0.0, 0.0, 0.0, 0.0}}},
         }},
     };
 
@@ -39,7 +39,7 @@ UIRenderer::UIRenderer(Device *_device, Surface *_surface, u32 _width, u32 _heig
         .stage              = VK_SHADER_STAGE_FRAGMENT_BIT,
         .nextStage          = 0,
         .codeType           = VK_SHADER_CODE_TYPE_SPIRV_EXT,
-        .code               = readFile("Shaders/UIRoundedBox.frag.spv"),
+        .code               = readFile("Shaders/UIRoundedRect.frag.spv"),
         .name               = "main",
         .pushConstantRanges = {VkPushConstantRange{
             .offset = 0,
@@ -109,7 +109,7 @@ void UIRenderer::recordCommandBuffer(const UIDrawData &drawData) {
                                   .format   = VK_FORMAT_R32G32_SFLOAT,
                               }});
 
-    cmdBuffer->setColorBlendEnable(0, true);
+    cmdBuffer->setColorBlendEnable(0, false);
     cmdBuffer->setColorBlendEquation(0,
                                      VkColorBlendEquationEXT{
                                          .srcColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA,
@@ -125,7 +125,9 @@ void UIRenderer::recordCommandBuffer(const UIDrawData &drawData) {
 
     cmdBuffer->beginRendering(renderingInfo);
 
+    u32 i = 0;
     for (auto &cmd : drawData.getDrawCommands()) {
+        if (i == 1) cmdBuffer->setColorBlendEnable(0, true);  // first draw should not use blending
         switch (cmd.kind) {
             case UIDrawCmdKind::RoundedBox: {
                 // setVertexBufferRect(cmd.roundedBox.rect);
@@ -137,6 +139,7 @@ void UIRenderer::recordCommandBuffer(const UIDrawData &drawData) {
             }
             default: break;
         }
+        i++;
     }
 
     cmdBuffer->endRendering();

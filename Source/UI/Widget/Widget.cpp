@@ -1,5 +1,3 @@
 #include "Widget.hpp"
 
-Widget::Widget(Widget *_parent) : parent(_parent) {}
-
-Size Widget::minSize() { return {0, 0}; }
+Vec2 Widget::minSize() { return {0, 0}; }

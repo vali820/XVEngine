@@ -3,6 +3,7 @@
 #include "Core/Core.hpp"
 #include "Core/Math.hpp"
 #include "GpuApi/GpuApi.hpp"
+#include "UI/UI.hpp"
 
 class App;
 class Window;
@@ -22,12 +23,17 @@ class AppWindow {
     Semaphore* uiRenderFinished;
 
     u32 width = 800, height = 600;
+    Rect viewport;
 
     UIRenderer* uiRenderer;
+
+    Widget* child;
 
    public:
     explicit AppWindow(App* app, const String& title);
     ~AppWindow();
+
+    void setChild(Widget* child);
 
     void update();
 

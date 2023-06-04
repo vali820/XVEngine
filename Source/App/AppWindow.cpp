@@ -36,6 +36,7 @@ AppWindow::AppWindow(App* _app, const String& title) : app(_app), device(app->ge
 }
 
 AppWindow::~AppWindow() {
+    delete child;
     delete uiRenderFinished, delete imageAvailable;
     delete uiRenderer;
     delete surface;
@@ -51,9 +52,17 @@ void AppWindow::update() {
     UIDrawData drawData;
     drawData.setColor({0.1, 0.1, 0.1, 1.0});
     drawData.setSecondaryColor({0.3, 0.3, 0.3, 1.0});
-    drawData.addRoundedRect({100, 100, 200, 100}, 20, 2);
-    drawData.addRoundedRect({150, 150, 200, 100}, 20, 1);
-    drawData.addRoundedRect({200, 200, 200, 100}, 20, 0.5);
+    drawData.setViewport(viewport);
+    // draw window background
+    drawData.addRoundedRect({0, 0, viewport.getBottomRight()}, 12, 1);
+    drawData.setViewport({viewport.getPosition() + 6, viewport.getSize() - 12});
+
+    if (child) {
+        Vec2 minSize = child->minSize();
+        if (minSize.x <= viewport.w and minSize.y <= viewport.h) {
+            child->draw(drawData, minSize);
+        }
+    }
 
     uiRenderer->render(drawData, imageIndex, imageAvailable, uiRenderFinished);
 
@@ -65,6 +74,9 @@ void AppWindow::update() {
 
 void AppWindow::resize() {
     config.width = width, config.height = height;
+    viewport = {2, 2, f32(width - 4), f32(height - 4)};
     surface->configure(config);
     uiRenderer->resize(width, height);
 }
+
+void AppWindow::setChild(Widget* _child) { child = _child; }

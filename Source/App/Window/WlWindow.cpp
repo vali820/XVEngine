@@ -12,7 +12,7 @@ WlWindow::WlWindow(WlConnection *_connection) : connection(_connection) {
 
     zxdg_toplevel_decoration_v1 *decoration =
         zxdg_decoration_manager_v1_get_toplevel_decoration(connection->decorationManager, toplevel);
-    zxdg_toplevel_decoration_v1_set_mode(decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+    zxdg_toplevel_decoration_v1_set_mode(decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
 
     wl_surface_commit(surface);
 }

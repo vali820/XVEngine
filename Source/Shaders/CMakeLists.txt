@@ -3,7 +3,7 @@ set(SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/Source/Shaders/)
 
 add_custom_target(Shaders)
 
-set(SHADER_FILES UIRoundedBox.frag UIVertex.vert)
+set(SHADER_FILES UIRoundedRect.frag UIVertex.vert)
 
 foreach (shader IN ITEMS ${SHADER_FILES})
     set(SRC_PATH "${SHADER_SRC_DIR}${shader}")

@@ -1,19 +1,13 @@
 #pragma once
 
+#include "../DrawData.hpp"
 #include "Core/Core.hpp"
 
-struct Size {
-    u32 width, height;
-};
-
 class Widget {
-   private:
-    Widget* parent;
-
    public:
-    explicit Widget(Widget* parent);
+    Widget() = default;
 
-   protected:
-    virtual Size minSize();
-    virtual void draw() {}
+    virtual Vec2 minSize();
+    virtual void draw(UIDrawData& drawData, const Vec2& size) {}
+
 };
