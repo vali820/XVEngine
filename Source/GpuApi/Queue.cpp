@@ -16,9 +16,9 @@ void Queue::submit(const Vec<CmdBuffer *> &_cmdBuffers, const Vec<Semaphore *> &
     Vec<VkSemaphore> waitSemaphores;
     Vec<VkSemaphore> signalSemaphores;
 
-    for (CmdBuffer *c : _cmdBuffers) cmdBuffers.push(c->getVkCommandBuffer());
-    for (Semaphore *s : _waitSemaphores) waitSemaphores.push(s->getVkSemaphore());
-    for (Semaphore *s : _signalSemaphores) signalSemaphores.push(s->getVkSemaphore());
+    for (CmdBuffer *c : _cmdBuffers) cmdBuffers.push(c ? c->getVkCommandBuffer() : nullptr);
+    for (Semaphore *s : _waitSemaphores) waitSemaphores.push(s ? s->getVkSemaphore() : nullptr);
+    for (Semaphore *s : _signalSemaphores) signalSemaphores.push(s ? s->getVkSemaphore() : nullptr);
 
     VkSubmitInfo submitInfo{
         .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,

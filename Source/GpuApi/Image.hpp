@@ -7,6 +7,7 @@
 #include "ThirdParty/vma/vk_mem_alloc.h"
 
 class Device;
+class CmdBuffer;
 
 class Image {
    private:
@@ -14,15 +15,24 @@ class Image {
     VkImage image{};
     VmaAllocation allocation{};
     VmaAllocationInfo allocationInfo{};
+    VkFormat format;
+    const bool owned = true;
 
    public:
-    Image(Device* device, const ImageDesc& desc, VmaAllocationCreateFlags allocationFlags);
+    Image(Device* device, VkFormat format, u32 width, u32 height, VkImageUsageFlags usage,
+          VkSampleCountFlagBits samples, VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+          VmaAllocationCreateFlags allocationFlags = 0);
+    Image(Device* device, VkImage image, VkFormat format);
     ~Image();
+
+    bool transitionLayoutCmd(CmdBuffer* cmdBuffer, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void transitionLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
 
     inline Device* getDevice() { return device; }
     inline VkImage getVkImage() { return image; }
-    inline VmaAllocation getVmaAllocation() { return allocation; }
-    [[nodiscard]] inline void* getData() const { return allocationInfo.pMappedData; }
+    [[nodiscard]] inline VkFormat getVkFormat() const { return format; }
+    VmaAllocation getVmaAllocation();
+    [[nodiscard]] void* getData() const;
 };
 
 class ImageView {
@@ -32,8 +42,9 @@ class ImageView {
     VkImageView view{};
 
    public:
-    ImageView(Image* image, VkFormat format);
-    ImageView(Device* device, VkImage image, VkFormat format);
+    explicit ImageView(Image* image, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
+    ImageView(Device* device, VkImage image, VkFormat format,
+              VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
     ~ImageView();
 
     inline Device* getDevice() { return device; }

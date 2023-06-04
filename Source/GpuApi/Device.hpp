@@ -20,14 +20,22 @@ class Device {
 
     VmaAllocator allocator{};
 
+    VkPhysicalDeviceLineRasterizationFeaturesEXT supportedLineRasterizationFeatures{};
     VkPhysicalDeviceDescriptorBufferFeaturesEXT supportedDescriptorBufferFeatures{};
     VkPhysicalDeviceShaderObjectFeaturesEXT supportedShaderObjectFeatures{};
     VkPhysicalDeviceVulkan13Features supportedVulkan13Features{};
     VkPhysicalDeviceFeatures2 supportedFeatures2{};
 
+    VkPhysicalDeviceLineRasterizationFeaturesEXT enabledLineRasterizationFeatures{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT,
+        .pNext = nullptr,
+        .rectangularLines = true,
+        .bresenhamLines = true,
+        .smoothLines = true,
+    };
     VkPhysicalDeviceDescriptorBufferFeaturesEXT enabledDescriptorBufferFeatures{
         .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-        .pNext            = nullptr,
+        .pNext            = &enabledLineRasterizationFeatures,
         .descriptorBuffer = true,
     };
     VkPhysicalDeviceShaderObjectFeaturesEXT enabledShaderObjectFeatures{
@@ -74,6 +82,9 @@ class Device {
     DEFCMD(vkCmdSetColorBlendEnableEXT);
     DEFCMD(vkCmdSetColorBlendEquationEXT);
     DEFCMD(vkCmdSetColorWriteMaskEXT);
+    DEFCMD(vkCmdSetLineRasterizationModeEXT);
+    DEFCMD(vkCmdSetLineStippleEnableEXT);
+    DEFCMD(vkCmdSetLineStippleEXT);
 
     DEFCMD(vkCmdBindShadersEXT);
     DEFCMD(vkCreateShadersEXT);

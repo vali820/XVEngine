@@ -1,10 +1,8 @@
 add_library(App
         App.cpp AppWindow.cpp
-        Window/Window.cpp Window/WindowConnection.cpp Event/Event.cpp
-        Draw/DrawContext.cpp
-        Widget/Widget.cpp
+        Window/Window.cpp Window/WindowConnection.cpp Input/Mouse.cpp Input/Keyboard.cpp
         )
-target_link_libraries(App Core GpuApi)
+target_link_libraries(App Core GpuApi Render UI)
 
 if (LINUX)
     target_sources(App PRIVATE

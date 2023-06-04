@@ -14,3 +14,4 @@
 #include "Shader.hpp"
 #include "Descriptor.hpp"
 #include "Buffer.hpp"
+#include "Image.hpp"

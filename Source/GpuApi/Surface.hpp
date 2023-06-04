@@ -3,12 +3,12 @@
 #include <vulkan/vulkan.h>
 
 #include "GpuApi/Common.hpp"
-#include "Image.hpp"
 
 class Device;
 class Window;
 class Semaphore;
 class Fence;
+class Image;
 
 class Surface {
    private:
@@ -28,7 +28,7 @@ class Surface {
     VkSurfaceCapabilitiesKHR surfaceCaps{};
 
     u32 imageCount = 0;
-    Vec<VkImage> images;
+    Vec<Image*> images;
     Vec<ImageView*> imageViews;
 
     bool isX11Window = false;
@@ -42,7 +42,7 @@ class Surface {
 
     VkResult getNextImageIndex(u64 timeout, Semaphore* semaphore, Fence* fence, u32& idx);
 
-    inline const Vec<VkImage>& getImages() { return images; }
+    inline const Vec<Image*>& getImages() { return images; }
     inline const Vec<ImageView*>& getImageViews() { return imageViews; }
 
     inline Device* getDevice() { return device; }

@@ -22,6 +22,7 @@ static const Vec<const char*> deviceExtensions = {
     "VK_EXT_shader_object",
     "VK_EXT_extended_dynamic_state3",
     "VK_EXT_descriptor_buffer",
+    "VK_EXT_line_rasterization",
 };
 
 Device::Device() {
@@ -81,7 +82,10 @@ void Device::pickPhysicalDevice() {
                           supportedVulkan13Features.synchronization2 and
                           supportedVulkan13Features.dynamicRendering and
                           supportedShaderObjectFeatures.shaderObject and
-                          supportedDescriptorBufferFeatures.descriptorBuffer;
+                          supportedDescriptorBufferFeatures.descriptorBuffer and
+                          supportedLineRasterizationFeatures.rectangularLines and
+                          supportedLineRasterizationFeatures.bresenhamLines and
+                          supportedLineRasterizationFeatures.smoothLines;
         // clang-format on
 
         if (featuresOk)
@@ -92,9 +96,13 @@ void Device::pickPhysicalDevice() {
 }
 
 void Device::getPhysicalDeviceFeatures(VkPhysicalDevice pd) {
+    supportedLineRasterizationFeatures = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT,
+        .pNext = nullptr,
+    };
     supportedDescriptorBufferFeatures = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-        .pNext = nullptr,
+        .pNext = &supportedLineRasterizationFeatures,
     };
     supportedShaderObjectFeatures = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
@@ -197,6 +205,9 @@ void Device::getFunctionPointers() {
     GETCMD(vkCmdSetColorBlendEnableEXT);
     GETCMD(vkCmdSetColorBlendEquationEXT);
     GETCMD(vkCmdSetColorWriteMaskEXT);
+    GETCMD(vkCmdSetLineRasterizationModeEXT);
+    GETCMD(vkCmdSetLineStippleEnableEXT);
+    GETCMD(vkCmdSetLineStippleEXT);
 
     GETCMD(vkCmdBindShadersEXT);
     GETCMD(vkCreateShadersEXT);

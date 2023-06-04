@@ -19,3 +19,10 @@ Buffer::Buffer(Device *_device, u64 _size, VkBufferUsageFlags usage, VmaAllocati
 }
 
 Buffer::~Buffer() { vmaDestroyBuffer(device->getVmaAllocator(), buffer, allocation); }
+
+CpuVisibleBuffer::CpuVisibleBuffer(Device *_device, u64 _size, VkBufferUsageFlags usage)
+    : Buffer(_device, _size, usage,
+             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT) {}
+
+GpuLocalBuffer::GpuLocalBuffer(Device *_device, u64 _size, VkBufferUsageFlags usage)
+    : Buffer(_device, _size, usage) {}

@@ -6,11 +6,7 @@
 
 class App;
 class Window;
-
-struct Vertex {
-    FVec3 pos;
-    FVec3 color;
-};
+class UIRenderer;
 
 class AppWindow {
    private:
@@ -19,29 +15,15 @@ class AppWindow {
 
     Device* device;
     Surface* surface;
-    CmdBuffer* cmdBuffer;
-    Queue* queue;
-
-    Semaphore* imageAvailable;
-    Semaphore* renderFinished;
-    Fence* fence;
-
-    Shader* vs;
-    Shader* fs;
-
     SurfaceConfig config{};
     VkSurfaceFormatKHR surfaceFormat{};
-    RenderingInfo renderingInfo;
     u32 imageIndex = 0;
-
-    Buffer* vertexBuffer{};
-    Buffer* indexBuffer{};
-
-    DescriptorSetLayout* descriptorSetLayout{};
+    Semaphore* imageAvailable;
+    Semaphore* uiRenderFinished;
 
     u32 width = 800, height = 600;
 
-    f32 pushConstant = 0.0f;
+    UIRenderer* uiRenderer;
 
    public:
     explicit AppWindow(App* app, const String& title);
@@ -52,6 +34,5 @@ class AppWindow {
     inline App* getApp() { return app; }
 
    private:
-    void recordCommandBuffer();
-    Buffer* createBufferLocal(VkBufferUsageFlags usage, void* data, u64 size);
+    void resize();
 };

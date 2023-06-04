@@ -11,6 +11,8 @@ Shader::Shader(Device *_device, const ShaderDesc &desc) : device(_device) {
     Vec<VkDescriptorSetLayout> sets;
     for (auto set : desc.setLayouts) sets.push(set->getVkDescriptorSetLayout());
 
+    for (auto &p : desc.pushConstantRanges) p.stageFlags = desc.stage;
+
     VkPipelineLayoutCreateInfo layoutCreateInfo{
         .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .setLayoutCount         = (u32)sets.getSize(),

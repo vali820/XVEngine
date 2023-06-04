@@ -4,6 +4,7 @@
 
 #include "App/Window/Window.hpp"
 #include "Device.hpp"
+#include "Image.hpp"
 
 // clang-format off
 #ifdef __linux__
@@ -140,12 +141,16 @@ void Surface::createSwapchain() {
 
     // Get images
     vkGetSwapchainImagesKHR(device->getVkDevice(), swapchain, &imageCount, nullptr);
-    images.resize(imageCount);
-    vkGetSwapchainImagesKHR(device->getVkDevice(), swapchain, &imageCount, images.getData());
+    Vec<VkImage> vkImages(imageCount);
+    vkGetSwapchainImagesKHR(device->getVkDevice(), swapchain, &imageCount, vkImages.getData());
+
+    for (VkImage img : vkImages) {
+        images.push(new Image(device, img, format));
+    }
 
     // Create image views
-    for (const auto& img : images) {
-        imageViews.push(new ImageView(device, img, format));
+    for (Image* img : images) {
+        imageViews.push(new ImageView(img));
     }
 }
 
@@ -153,6 +158,7 @@ void Surface::destroySwapchain() {
     if (swapchain) {
         vkDestroySwapchainKHR(device->getVkDevice(), swapchain, nullptr);
         for (auto view : imageViews) delete view;
+        for (auto img : images) delete img;
         images.clear();
         imageViews.clear();
     }

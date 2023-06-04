@@ -30,16 +30,17 @@ class CmdBuffer {
    private:
     Device* device;
     CmdPool* cmdPool;
-    CmdBufferLevel level;
+    VkCommandBufferLevel level;
     VkCommandBuffer cmdBuffer{};
 
    public:
-    explicit CmdBuffer(CmdPool* cmdPool, CmdBufferLevel level = CmdBufferLevel::Primary);
+    explicit CmdBuffer(CmdPool* cmdPool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     ~CmdBuffer();
 
     // Basic
     void reset();
-    void begin();
+    void begin(bool oneTimeSubmit = false);
+    void defaultState();
     void end();
     void beginRendering(const RenderingInfo& info);
     void endRendering();
@@ -48,7 +49,7 @@ class CmdBuffer {
     void copyBuffer(Buffer* src, Buffer* dst, u64 size, u64 srcOffset = 0, u64 dstOffset = 0);
     void pushConstant(Shader* shader, u32 offset, u32 size, void* data);
 
-    void barrier(const Vec<VkImageMemoryBarrier2>& imageBarriers);
+    void imageMemoryBarrier(VkImageMemoryBarrier2 barrier);
 
     // Binding
     void bindShader(VkShaderStageFlagBits stage, Shader* shader);
@@ -66,20 +67,26 @@ class CmdBuffer {
 
     // Rasterization state
     void setRasterizationSamples(VkSampleCountFlagBits samples);
-    void setSampleMask(VkSampleCountFlagBits samples, const Vec<u32>& masks);
     void setAlphaToCoverageEnable(bool enable);
     void setPolygonMode(VkPolygonMode polygonMode);
     void setLineWidth(f32 width);
+    void setLineRasterizationMode(VkLineRasterizationModeEXT mode);
+    void setLineStippleEnable(bool enable);
+    void setLineStipple(u32 factor, u16 pattern);
     void setCullMode(VkCullModeFlagBits cullMode);
     void setFrontFace(VkFrontFace frontFace);
     void setDepthTestEnable(bool enable);
     void setDepthWriteEnable(bool enable);
+    void setDepthCompareOp(VkCompareOp op);
     void setDepthBiasEnable(bool enable);
+    void setDepthBias(f32 constantFactor, f32 clamp, f32 slopeFactor);
     void setStencilTestEnable(bool enable);
+    void setStencilOp(VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp,
+                      VkStencilOp depthFailOp, VkCompareOp compareOp);
 
     // Color blending state
-    void setColorBlendEnable(u32 firstAttachment, const Vec<bool>& enables);
-    void setColorBlendEquation(u32 firstAttachment, const Vec<VkColorBlendEquationEXT>& equations);
+    void setColorBlendEnable(u32 attachment, bool enable);
+    void setColorBlendEquation(u32 attachment, VkColorBlendEquationEXT equation);
     void setColorWriteMask(u32 firstAttachment, const Vec<VkColorComponentFlags>& masks);
 
     inline Device* getDevice() { return device; }

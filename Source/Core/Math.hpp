@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Math/Mat2.hpp"
-#include "Math/Mat3.hpp"
-#include "Math/Mat4.hpp"
-#include "Math/Vec2.hpp"
-#include "Math/Vec3.hpp"
-#include "Math/Vec4.hpp"
+#include "Math/Basic.hpp"
+#include "Math/Matrix2.hpp"
+#include "Math/Matrix3.hpp"
+#include "Math/Matrix4.hpp"
+#include "Math/Rectangle.hpp"
+#include "Math/Vector2.hpp"
+#include "Math/Vector3.hpp"
+#include "Math/Vector4.hpp"

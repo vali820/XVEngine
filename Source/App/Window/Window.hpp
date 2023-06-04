@@ -1,10 +1,13 @@
 #pragma once
 
-#include "../Event/Event.hpp"
+#include "../Input/Event.hpp"
 #include "Core/Core.hpp"
 
 class Window {
    private:
+    Mouse mouse;
+    Keyboard keyboard;
+
     std::function<void()> _exitF                                               = nullptr;
     std::function<void(const ResizeEvent&)> _resizeF                           = nullptr;
     std::function<void(const MouseMoveEvent&)> _mouseMoveF                     = nullptr;
@@ -34,13 +37,16 @@ class Window {
     void setKeyPressedCallback(const std::function<void(const KeyPressedEvent&)>& f);
     void setKeyReleasedCallback(const std::function<void(const KeyReleasedEvent&)>& f);
 
+    [[nodiscard]] const Mouse& getMouse() const { return mouse; }
+    [[nodiscard]] const Keyboard& getKeyboard() const { return keyboard; }
+
     virtual void show() = 0;
     virtual void hide() = 0;
 
-    virtual void minimize()                         = 0;
-    virtual void setMaximized(bool value)           = 0;
-    virtual void setFullscreen(bool value)          = 0;
-    virtual void resize(u32 width, u32 height)      = 0;
+    virtual void minimize()                    = 0;
+    virtual void setMaximized(bool value)      = 0;
+    virtual void setFullscreen(bool value)     = 0;
+    virtual void resize(u32 width, u32 height) = 0;
     virtual void setTitle(const String& title) = 0;
 
     virtual u32 getWidth()  = 0;

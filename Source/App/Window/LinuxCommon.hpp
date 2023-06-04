@@ -1,5 +1,5 @@
 #pragma once
 
-#include "../Event/Event.hpp"
+#include "../Input/Event.hpp"
 
 Key xkbKeysymToKey(u32 keysym);

@@ -7,18 +7,25 @@ void Window::resizeF(const ResizeEvent& e) {
     if (_resizeF) _resizeF(e);
 }
 void Window::mouseMoveF(const MouseMoveEvent& e) {
+    mouse.setPos(e.x, e.y);
     if (_mouseMoveF) _mouseMoveF(e);
 }
 void Window::mouseButtonPressedF(const MouseButtonPressedEvent& e) {
+    mouse.setButton(e.button, true);
     if (_mouseButtonPressedF) _mouseButtonPressedF(e);
 }
 void Window::mouseButtonReleasedF(const MouseButtonReleasedEvent& e) {
+    mouse.setButton(e.button, false);
     if (_mouseButtonReleasedF) _mouseButtonReleasedF(e);
 }
 void Window::keyPressedF(const KeyPressedEvent& e) {
+    keyboard.setKey(e.key, true);
+    keyboard.setModifiers(e.modifiers);
     if (_keyPressedF) _keyPressedF(e);
 }
 void Window::keyReleasedF(const KeyReleasedEvent& e) {
+    keyboard.setKey(e.key, false);
+    keyboard.setModifiers(e.modifiers);
     if (_keyReleasedF) _keyReleasedF(e);
 }
 

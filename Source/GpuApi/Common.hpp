@@ -1,7 +1,7 @@
 #pragma once
 
+#include <ThirdParty/vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 #include "Core/Core.hpp"
 
@@ -16,11 +16,6 @@ struct SurfaceConfig {
     VkColorSpaceKHR colorSpace;
     VkPresentModeKHR presentMode;
     u32 width, height;
-};
-
-enum class CmdBufferLevel {
-    Primary   = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-    Secondary = VK_COMMAND_BUFFER_LEVEL_SECONDARY,
 };
 
 struct ShaderDesc {
@@ -39,6 +34,9 @@ struct RenderingAttachment {
     VkAttachmentLoadOp loadOp;
     VkAttachmentStoreOp storeOp;
     VkClearValue clearValue;
+    VkResolveModeFlagBits resolveMode;
+    ImageView* resolveImageView;
+    VkImageLayout resolveImageLayout;
 
     [[nodiscard]] VkRenderingAttachmentInfo getVkInfo() const;
 };
@@ -61,13 +59,6 @@ struct VertexAttribute {
     u32 binding;
     u32 offset;
     VkFormat format;
-};
-
-struct ImageDesc {
-    VkFormat format;
-    u32 width, height;
-    VkImageUsageFlags usage;
-    VkImageLayout initialLayout;
 };
 
 struct DescriptorBufferBindingInfo {

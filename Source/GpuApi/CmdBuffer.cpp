@@ -14,12 +14,12 @@ CmdPool::~CmdPool() {
     }
 }
 
-CmdBuffer::CmdBuffer(CmdPool *_cmdPool, CmdBufferLevel _level)
+CmdBuffer::CmdBuffer(CmdPool *_cmdPool, VkCommandBufferLevel _level)
     : device(_cmdPool->getDevice()), cmdPool(_cmdPool), level(_level) {
     VkCommandBufferAllocateInfo allocateInfo{
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .commandPool        = cmdPool->getVkCommandPool(),
-        .level              = (VkCommandBufferLevel)level,
+        .level              = level,
         .commandBufferCount = 1,
     };
     vkAllocateCommandBuffers(device->getVkDevice(), &allocateInfo, &cmdBuffer);
@@ -31,11 +31,31 @@ CmdBuffer::~CmdBuffer() {
 
 void CmdBuffer::reset() { vkResetCommandBuffer(cmdBuffer, 0); }
 
-void CmdBuffer::begin() {
+void CmdBuffer::begin(bool oneTimeSubmit) {
     VkCommandBufferBeginInfo beginInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
     };
+    if (oneTimeSubmit) beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+}
+
+void CmdBuffer::defaultState() {
+    setRasterizerDiscardEnable(false);
+    setPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    setPrimitiveRestartEnable(false);
+    setRasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
+    setAlphaToCoverageEnable(false);
+    setPolygonMode(VK_POLYGON_MODE_FILL);
+    setCullMode(VK_CULL_MODE_BACK_BIT);
+    setFrontFace(VK_FRONT_FACE_CLOCKWISE);
+    setDepthTestEnable(false);
+    setDepthWriteEnable(false);
+    setDepthBiasEnable(false);
+    setStencilTestEnable(false);
+    setLineWidth(1.0);
+    setLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT);
+    setColorBlendEnable(0, false);
+    setColorWriteMask(0, {COLOR_COMPONENTS_ALL});
 }
 
 void CmdBuffer::end() { vkEndCommandBuffer(cmdBuffer); }
@@ -89,7 +109,7 @@ void CmdBuffer::bindShader(VkShaderStageFlagBits stage, Shader *shader) {
 }
 
 void CmdBuffer::bindVertexBuffer(Buffer *buffer, u32 bindingIndex) {
-    VkBuffer buf = buffer->getVkBuffer();
+    VkBuffer buf = buffer ? buffer->getVkBuffer() : nullptr;
     u64 offset   = 0;
     vkCmdBindVertexBuffers(cmdBuffer, bindingIndex, 1, &buf, &offset);
 }
@@ -110,13 +130,13 @@ void CmdBuffer::bindDescriptorBuffers(const Vec<DescriptorBufferBindingInfo> &bi
     device->vkCmdBindDescriptorBuffersEXT(cmdBuffer, vkBindingInfos.getSize(), vkBindingInfos.getData());
 }
 
-void CmdBuffer::barrier(const Vec<VkImageMemoryBarrier2> &imageBarriers) {
+void CmdBuffer::imageMemoryBarrier(VkImageMemoryBarrier2 barrier) {
     VkDependencyInfo info{
         .sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
         .memoryBarrierCount       = 0,
         .bufferMemoryBarrierCount = 0,
-        .imageMemoryBarrierCount  = (u32)imageBarriers.getSize(),
-        .pImageMemoryBarriers     = imageBarriers.getData(),
+        .imageMemoryBarrierCount  = 1,
+        .pImageMemoryBarriers     = &barrier,
     };
     vkCmdPipelineBarrier2(cmdBuffer, &info);
 }
@@ -169,10 +189,8 @@ void CmdBuffer::setPrimitiveRestartEnable(bool enable) { vkCmdSetPrimitiveRestar
 
 void CmdBuffer::setRasterizationSamples(VkSampleCountFlagBits samples) {
     device->vkCmdSetRasterizationSamplesEXT(cmdBuffer, samples);
-}
-
-void CmdBuffer::setSampleMask(VkSampleCountFlagBits samples, const Vec<u32> &masks) {
-    device->vkCmdSetSampleMaskEXT(cmdBuffer, samples, masks.getData());
+    u32 masks[2] = {UINT32_MAX, UINT32_MAX};
+    device->vkCmdSetSampleMaskEXT(cmdBuffer, samples, masks);
 }
 
 void CmdBuffer::setAlphaToCoverageEnable(bool enable) {
@@ -185,6 +203,16 @@ void CmdBuffer::setPolygonMode(VkPolygonMode polygonMode) {
 
 void CmdBuffer::setLineWidth(f32 width) { vkCmdSetLineWidth(cmdBuffer, width); }
 
+void CmdBuffer::setLineRasterizationMode(VkLineRasterizationModeEXT mode) {
+    device->vkCmdSetLineRasterizationModeEXT(cmdBuffer, mode);
+}
+
+void CmdBuffer::setLineStippleEnable(bool enable) { device->vkCmdSetLineStippleEnableEXT(cmdBuffer, enable); }
+
+void CmdBuffer::setLineStipple(u32 factor, u16 pattern) {
+    device->vkCmdSetLineStippleEXT(cmdBuffer, factor, pattern);
+}
+
 void CmdBuffer::setCullMode(VkCullModeFlagBits cullMode) { vkCmdSetCullMode(cmdBuffer, cullMode); }
 
 void CmdBuffer::setFrontFace(VkFrontFace frontFace) { vkCmdSetFrontFace(cmdBuffer, frontFace); }
@@ -193,19 +221,28 @@ void CmdBuffer::setDepthTestEnable(bool enable) { vkCmdSetDepthTestEnable(cmdBuf
 
 void CmdBuffer::setDepthWriteEnable(bool enable) { vkCmdSetDepthWriteEnable(cmdBuffer, enable); }
 
+void CmdBuffer::setDepthCompareOp(VkCompareOp op) { vkCmdSetDepthCompareOp(cmdBuffer, op); }
+
 void CmdBuffer::setDepthBiasEnable(bool enable) { vkCmdSetDepthBiasEnable(cmdBuffer, enable); }
+
+void CmdBuffer::setDepthBias(f32 constantFactor, f32 clamp, f32 slopeFactor) {
+    vkCmdSetDepthBias(cmdBuffer, constantFactor, clamp, slopeFactor);
+}
 
 void CmdBuffer::setStencilTestEnable(bool enable) { vkCmdSetStencilTestEnable(cmdBuffer, enable); }
 
-void CmdBuffer::setColorBlendEnable(u32 firstAttachment, const Vec<bool> &enables) {
-    Vec<VkBool32> enablesVk;
-    for (bool b : enables) enablesVk.push(b);
-    device->vkCmdSetColorBlendEnableEXT(cmdBuffer, firstAttachment, enablesVk.getSize(), enablesVk.getData());
+void CmdBuffer::setStencilOp(VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp,
+                             VkStencilOp depthFailOp, VkCompareOp compareOp) {
+    vkCmdSetStencilOp(cmdBuffer, faceMask, failOp, passOp, depthFailOp, compareOp);
 }
 
-void CmdBuffer::setColorBlendEquation(u32 firstAttachment, const Vec<VkColorBlendEquationEXT> &equations) {
-    device->vkCmdSetColorBlendEquationEXT(
-        cmdBuffer, firstAttachment, equations.getSize(), equations.getData());
+void CmdBuffer::setColorBlendEnable(u32 attachment, bool enable) {
+    VkBool32 enabled = enable;
+    device->vkCmdSetColorBlendEnableEXT(cmdBuffer, attachment, 1, &enabled);
+}
+
+void CmdBuffer::setColorBlendEquation(u32 attachment, VkColorBlendEquationEXT equation) {
+    device->vkCmdSetColorBlendEquationEXT(cmdBuffer, attachment, 1, &equation);
 }
 
 void CmdBuffer::setColorWriteMask(u32 firstAttachment, const Vec<VkColorComponentFlags> &masks) {

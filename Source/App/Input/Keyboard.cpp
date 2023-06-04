@@ -1,17 +1,16 @@
-#include "Event.hpp"
+#include "Keyboard.hpp"
 
-const char* mouseButtonToString(MouseButton mouseButton) {
-    switch (mouseButton) {
-        case MouseButton::Left: return "Left";
-        case MouseButton::Right: return "Right";
-        case MouseButton::Middle: return "Middle";
-        case MouseButton::_4: return "Button4";
-        case MouseButton::_5: return "Button5";
-    }
+Keyboard::Keyboard() : mods(0), keys() {
+    for (bool& key : keys) key = false;
 }
+
+void Keyboard::setKey(Key key, bool value) { keys[(u32)key] = value; }
+
+void Keyboard::setModifiers(const Modifiers& modifiers) { mods = modifiers; }
 
 const char* keyToString(Key key) {
     switch (key) {
+        case Key::KEY_COUNT:
         case Key::Unknown: return "Unknown";
         case Key::Escape: return "Escape";
         case Key::CapsLock: return "CapsLock";

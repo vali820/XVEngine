@@ -3,7 +3,7 @@
 #include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
 
-#include "../Event/Event.hpp"
+#include "../Input/Event.hpp"
 #include "Core/Core.hpp"
 #include "ThirdParty/wayland/xdg-decoration.h"
 #include "ThirdParty/wayland/xdg-shell.h"

@@ -2,7 +2,7 @@
 
 #include <xcb/xcb.h>
 
-#include "App/Event/Event.hpp"
+#include "../Input/Event.hpp"
 #include "X11Connection.hpp"
 
 X11Window::X11Window(X11Connection* _connection, u32 _width, u32 _height)

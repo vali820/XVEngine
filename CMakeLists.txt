@@ -17,6 +17,10 @@ endfunction()
 add_project(Core)
 add_project(App)
 add_project(GpuApi)
+add_project(Render)
+add_project(UI)
+add_project(Shaders)
 
 # Programs
 add_project(Programs/Sandbox)
+add_dependencies(Sandbox Shaders)
